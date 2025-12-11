@@ -19,7 +19,7 @@ class CommandHelperTest extends TestCase
     {
         $path = realpath(__DIR__ . '/../Fixtures');
 
-        $kernel = $this->createMock(Kernel::class);
+        $kernel = $this->createStub(Kernel::class);
         $kernel->method('getProjectDir')->willReturn($path);
 
         $helper = new CommandHelper($kernel);
@@ -32,7 +32,7 @@ class CommandHelperTest extends TestCase
 
     public function testGetPhpExecutable(): void
     {
-        $kernel = $this->createMock(Kernel::class);
+        $kernel = $this->createStub(Kernel::class);
         $kernel->method('getProjectDir')->willReturn(__DIR__);
 
         $helper = new CommandHelper($kernel);

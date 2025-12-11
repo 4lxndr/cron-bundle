@@ -8,7 +8,7 @@ use DateTime;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\Event\LifecycleEventArgs;
-use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use Psr\Clock\ClockInterface;
 use Shapecode\Bundle\CronBundle\Entity\AbstractEntity;
@@ -17,13 +17,13 @@ use stdClass;
 
 class EntitySubscriberTest extends TestCase
 {
-    private ClockInterface & MockObject $clock;
+    private ClockInterface & Stub $clock;
 
     private EntitySubscriber $subscriber;
 
     protected function setUp(): void
     {
-        $this->clock      = $this->createMock(ClockInterface::class);
+        $this->clock      = $this->createStub(ClockInterface::class);
         $this->subscriber = new EntitySubscriber($this->clock);
     }
 
@@ -44,7 +44,7 @@ class EntitySubscriberTest extends TestCase
 
         $entity->method('getCreatedAt')->willReturn(null);
 
-        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager = $this->createStub(EntityManagerInterface::class);
         $args          = new LifecycleEventArgs($entity, $entityManager);
 
         $this->subscriber->prePersist($args);
@@ -66,7 +66,7 @@ class EntitySubscriberTest extends TestCase
 
         $entity->method('getCreatedAt')->willReturn(new DateTime());
 
-        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager = $this->createStub(EntityManagerInterface::class);
         $args          = new LifecycleEventArgs($entity, $entityManager);
 
         $this->subscriber->preUpdate($args);
@@ -76,7 +76,7 @@ class EntitySubscriberTest extends TestCase
     {
         $nonEntity = new stdClass();
 
-        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager = $this->createStub(EntityManagerInterface::class);
         $args          = new LifecycleEventArgs($nonEntity, $entityManager);
 
         $this->subscriber->prePersist($args);

@@ -18,7 +18,7 @@ final class CronJobManagerTest extends TestCase
         $expression  = '* * * * *';
         $commandName = 'value';
 
-        $command = $this->createMock(Command::class);
+        $command = $this->createStub(Command::class);
         $command->method('getName')->willReturn($commandName);
 
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
