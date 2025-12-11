@@ -106,19 +106,5 @@
             "dealerdirect/phpcodesniffer-composer-installer": true,
             "icanhazstring/composer-unused": true
         }
-    },
-    "funding": [
-        {
-            "type": "github",
-            "url": "http://github.com/sponsors/nicklog"
-        },
-        {
-            "type": "paypal",
-            "url": "http://paypal.me/nloges"
-        },
-        {
-            "type": "liberapay",
-            "url": "https://liberapay.com/nicklog"
-        }
-    ]
+    }
 }
