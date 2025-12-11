@@ -1,5 +1,5 @@
 {
-    "name": "shapecode/cron-bundle",
+    "name": "4lxndr/cron-bundle",
     "description": "This bundle provides scheduled execution of Symfony commands",
     "keywords": [
         "cron",
