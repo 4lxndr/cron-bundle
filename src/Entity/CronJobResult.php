@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Shapecode\Bundle\CronBundle\Entity;
 
-use DateTime;
-use DateTimeInterface;
+use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Shapecode\Bundle\CronBundle\Repository\CronJobResultRepository;
@@ -15,8 +14,8 @@ use function sprintf;
 #[ORM\Entity(repositoryClass: CronJobResultRepository::class)]
 class CronJobResult extends AbstractEntity
 {
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    public private(set) DateTimeInterface $runAt {
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
+    public private(set) DateTimeImmutable $runAt {
         get => $this->runAt;
     }
 
@@ -46,13 +45,13 @@ class CronJobResult extends AbstractEntity
         float $runTime,
         int $statusCode,
         ?string $output,
-        DateTimeInterface $runAt,
+        DateTimeImmutable $runAt,
     ) {
         $this->runTime = $runTime;
         $this->statusCode = $statusCode;
         $this->output = $output;
         $this->cronJob = $cronJob;
-        $this->runAt = DateTime::createFromInterface($runAt);
+        $this->runAt = $runAt;
         $this->createdAt = null;
         $this->updatedAt = null;
     }

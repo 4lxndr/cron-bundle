@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Shapecode\Bundle\CronBundle\EventListener;
 
-use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsDoctrineListener;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Events;
@@ -42,7 +41,7 @@ final class EntitySubscriber
             return;
         }
 
-        $now = DateTime::createFromImmutable($this->clock->now());
+        $now = $this->clock->now();
 
         if ($entity->createdAt === null) {
             $entity->createdAt = $now;

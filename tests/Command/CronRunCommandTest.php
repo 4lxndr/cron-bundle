@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Shapecode\Bundle\CronBundle\Tests\Command;
 
-use DateTime;
+use DateTimeImmutable;
 use DateTimeInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\MockObject\Stub;
@@ -71,7 +71,7 @@ final class CronRunCommandTest extends TestCase
         $this->commandHelper->method('getTimeout')->willReturn(null);
 
         $job = new CronJob('pwd', '* * * * *');
-        $job->nextRun = new DateTime();
+        $job->nextRun = new DateTimeImmutable();
 
         $this->cronJobRepo->method('findAll')->willReturn([
             $job,
@@ -93,7 +93,7 @@ final class CronRunCommandTest extends TestCase
         $this->manager = self::createStub(EntityManagerInterface::class);
 
         $job = new CronJob('pwd', '* * * * *');
-        $job->nextRun = new DateTime();
+        $job->nextRun = new DateTimeImmutable();
 
         $this->cronJobRepo->method('findAll')->willReturn([
             $job,
@@ -113,7 +113,7 @@ final class CronRunCommandTest extends TestCase
         $this->commandHelper->method('getTimeout')->willReturn(null);
 
         $job = new CronJob('pwd', '* * * * *');
-        $job->nextRun = new DateTime();
+        $job->nextRun = new DateTimeImmutable();
 
         $this->cronJobRepo->method('findAll')->willReturn([
             $job,
@@ -159,7 +159,7 @@ final class CronRunCommandTest extends TestCase
         $this->commandHelper->method('getTimeout')->willReturn(null);
 
         $job = new CronJob('pwd', '* * * * *');
-        $job->nextRun = new DateTime();
+        $job->nextRun = new DateTimeImmutable();
 
         $this->cronJobRepo->method('findAll')->willReturn([
             $job,

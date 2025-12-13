@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace Shapecode\Bundle\CronBundle\Entity;
 
 use Cron\CronExpression;
-use DateTime;
-use DateTimeInterface;
+use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -50,16 +49,16 @@ class CronJob extends AbstractEntity
         set => $this->number = $value;
     }
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    public ?DateTimeInterface $lastUse {
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    public ?DateTimeImmutable $lastUse {
         get => $this->lastUse;
-        set => $this->lastUse = $value !== null ? DateTime::createFromInterface($value) : null;
+        set => $this->lastUse = $value !== null ? DateTimeImmutable::createFromInterface($value) : null;
     }
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    public DateTimeInterface $nextRun {
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
+    public DateTimeImmutable $nextRun {
         get => $this->nextRun;
-        set => $this->nextRun = DateTime::createFromInterface($value);
+        set => $this->nextRun = DateTimeImmutable::createFromInterface($value);
     }
 
     /** @var Collection<int, CronJobResult> */
@@ -132,7 +131,7 @@ class CronJob extends AbstractEntity
     public function calculateNextRun(): void
     {
         $cron = new CronExpression($this->period);
-        $this->nextRun = $cron->getNextRunDate();
+        $this->nextRun = DateTimeImmutable::createFromMutable($cron->getNextRunDate());
     }
 
     public function __toString(): string

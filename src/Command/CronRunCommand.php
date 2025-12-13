@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Shapecode\Bundle\CronBundle\Command;
 
 use DateInterval;
-use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Clock\ClockInterface;
 use Shapecode\Bundle\CronBundle\Collection\CronJobRunningCollection;
@@ -48,11 +47,11 @@ class CronRunCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $style = new CronStyle($input, $output);
-        $now = DateTime::createFromImmutable($this->clock->now());
+        $now = $this->clock->now();
 
         // Clean up old CronJobResult records if retention hours is configured
         if ($this->resultRetentionHours !== null) {
-            $retentionThreshold = (clone $now)->sub(new DateInterval(sprintf('PT%dH', $this->resultRetentionHours)));
+            $retentionThreshold = $now->sub(new DateInterval(sprintf('PT%dH', $this->resultRetentionHours)));
             $this->cronJobResultRepository->deleteOldLogs($retentionThreshold);
         }
 

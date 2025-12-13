@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Shapecode\Bundle\CronBundle\Tests\EventListener;
 
-use DateTime;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\Event\LifecycleEventArgs;
@@ -39,8 +38,8 @@ class EntitySubscriberTest extends TestCase
 
         $this->subscriber->prePersist($args);
 
-        self::assertInstanceOf(DateTime::class, $entity->createdAt);
-        self::assertInstanceOf(DateTime::class, $entity->updatedAt);
+        self::assertInstanceOf(DateTimeImmutable::class, $entity->createdAt);
+        self::assertInstanceOf(DateTimeImmutable::class, $entity->updatedAt);
         self::assertEquals('2024-10-10 12:00:00', $entity->createdAt->format('Y-m-d H:i:s'));
         self::assertEquals('2024-10-10 12:00:00', $entity->updatedAt->format('Y-m-d H:i:s'));
     }
