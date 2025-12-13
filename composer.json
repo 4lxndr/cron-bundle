@@ -44,7 +44,7 @@
         "symfony/stopwatch": "^7.4 || ^8.0",
         "symfony/event-dispatcher": "^7.4 || ^8.0",
         "symfony/event-dispatcher-contracts": "^3.5 || ^4.0",
-        "doctrine/doctrine-bundle": "^2.13",
+        "doctrine/doctrine-bundle": "^2.13 || ^3.0",
         "doctrine/collections": "^2.2",
         "doctrine/persistence": "^4.1",
         "doctrine/orm": "^3.5",
