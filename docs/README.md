@@ -1,57 +1,46 @@
 # Shapecode - Cron Bundle
 
-[![paypal](https://img.shields.io/badge/Donate-Paypal-blue.svg)](http://paypal.me/nloges)
+[![PHP Version](https://img.shields.io/packagist/php-v/4lxndr/cron-bundle.svg)](https://packagist.org/packages/4lxndr/cron-bundle)
+[![Latest Stable Version](https://img.shields.io/packagist/v/4lxndr/cron-bundle.svg?label=stable)](https://packagist.org/packages/4lxndr/cron-bundle)
+[![License](https://img.shields.io/packagist/l/4lxndr/cron-bundle.svg)](https://packagist.org/packages/4lxndr/cron-bundle)
 
-[![PHP Version](https://img.shields.io/packagist/php-v/shapecode/cron-bundle.svg)](https://packagist.org/packages/shapecode/cron-bundle)
-[![Latest Stable Version](https://img.shields.io/packagist/v/shapecode/cron-bundle.svg?label=stable)](https://packagist.org/packages/shapecode/cron-bundle)
-[![Latest Unstable Version](https://img.shields.io/packagist/vpre/shapecode/cron-bundle.svg?label=unstable)](https://packagist.org/packages/shapecode/cron-bundle)
-[![Total Downloads](https://img.shields.io/packagist/dt/shapecode/cron-bundle.svg)](https://packagist.org/packages/shapecode/cron-bundle)
-[![Monthly Downloads](https://img.shields.io/packagist/dm/shapecode/cron-bundle.svg)](https://packagist.org/packages/shapecode/cron-bundle)
-[![Daily Downloads](https://img.shields.io/packagist/dd/shapecode/cron-bundle.svg)](https://packagist.org/packages/shapecode/cron-bundle)
-[![License](https://img.shields.io/packagist/l/shapecode/cron-bundle.svg)](https://packagist.org/packages/shapecode/cron-bundle)
+A Symfony bundle for managing scheduled cron jobs within your application.
 
+## Requirements
 
-This bundle provides a simple interface for registering repeated scheduled
-tasks within your application.
+- PHP 8.4+
+- Symfony 7.4+ or 8.0+
 
-## Install instructions
+## Installation
 
-Installing this bundle can be done through these simple steps:
-
-Add the bundle to your project through composer:
+Install via Composer:
 ```bash
-composer require shapecode/cron-bundle
+composer require 4lxndr/cron-bundle
 ```
 
-Add the bundle to your config if it flex did not do it for you:
+If Symfony Flex doesn't auto-register the bundle, add it to `config/bundles.php`:
 ```php
-<?php
-
-// config/bundles.php
 return [
     // ...
-    Shapecode\Bundle\CronBundle\ShapecodeCronBundle::class,
-    // ...
+    Shapecode\Bundle\CronBundle\ShapecodeCronBundle::class => ['all' => true],
 ];
 ```
 
-Update your DB schema ...
-
-... with Doctrine schema update method ...
+Update your database schema:
 ```bash
 php bin/console doctrine:schema:update --force
 ```
 
-## Creating your own tasks
+## Usage
 
-Creating your own tasks with CronBundle couldn't be easier - all you have to do is create a normal Symfony2 Command (or ContainerAwareCommand) and tag it with the CronJob annotation, as demonstrated below:
+Create a Symfony console command and add the `AsCronJob` attribute:
 
 ```php
 <?php
 
 declare(strict_types=1);
 
-namespace App\DemoBundle\Command;
+namespace App\Command;
 
 use Shapecode\Bundle\CronBundle\Attribute\AsCronJob;
 use Symfony\Component\Console\Command\Command;
@@ -59,61 +48,62 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 #[AsCronJob('*/5 * * * *')]
-class DemoCommand extends Command
+class MyTaskCommand extends Command
 {
-    
-    public function configure() : void
+    protected function configure(): void
     {
-		// Must have a name configured
-		// ...
+        $this->setName('app:my-task');
     }
-    
-    public function execute(InputInterface $input, OutputInterface $output) : void
+
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
-		// Your code here
+        // Your task logic here
+
+        return Command::SUCCESS;
     }
 }
 ```
 
-The interval spec ("*\/5 * * * *" in the above example) use the standard cronjob schedule format and can be modified whenever you choose. You have to escape the / in this example because it would close the annotation.
-You can also register your command multiple times by using the annotation more than once with different values.
-For your CronJob to be scanned and included in future runs, you must first run `php bin/console shapecode:cron:scan` - it will be scheduled to run the next time you run `php app/console shapecode:cron:run`
+The cron expression (`*/5 * * * *`) follows standard crontab format. You can add multiple `AsCronJob` attributes to schedule the same command at different intervals.
 
-Register your new Crons:
+Scan and register your cron jobs:
 ```bash
-$ php bin/console shapecode:cron:scan
-$ php bin/console shapecode:cron:run
+php bin/console shapecode:cron:scan
+php bin/console shapecode:cron:run
 ```
 
-## Running your cron jobs automatically
+## Automatic Execution
 
-This bundle is designed around the idea that your tasks will be run with a minimum interval - the tasks will be run no more frequently than you schedule them, but they can only run when you trigger then (by running `bin/console shapecode:cron:run`).
-
-To facilitate this, you can create a cron job on your system like this:
+Add this to your system's crontab to run jobs automatically:
 ```bash
-*/5 * * * * php /path/to/symfony/bin/console shapecode:cron:run
+*/5 * * * * php /path/to/project/bin/console shapecode:cron:run
 ```
-This will schedule your tasks to run at almost every 5 minutes - for instance, tasks which are scheduled to run every 3 minutes will only run every 5 minutes.
 
-## Disabling and enabling individual cron jobs from the command line
+This executes the cron runner every 5 minutes. Jobs scheduled more frequently will be limited by this interval.
 
-This bundle allows you to easily disable and enable individual scheduled CronJobs from the command-line.
+## Managing Jobs
 
-To <strong>disable</strong> a CronJob, run: `bin/console shapecode:cron:disable your:cron:job`, where `your:cron:job` is the name of the CronJob in your project you would like to disable.
+Disable a cron job:
+```bash
+php bin/console shapecode:cron:disable app:my-task
+```
 
-Running the above will disable your CronJob until you manually enable it again. Please note that even though the `next_run` field on the `cron_job` table will still hold a datetime value, your disabled cronjob will not be run.
+Enable a cron job:
+```bash
+php bin/console shapecode:cron:enable app:my-task
+```
 
-To <strong>enable</strong> a cron job, run: `bin/console shapecode:cron:enable your:cron:job`, where `your:cron:job` is the name of the CronJob in your project you would like to enable.
+Check job status:
+```bash
+php bin/console shapecode:cron:status
+```
 
-## Config
+## Configuration
 
-By default, all cronjobs run until they are finished (or exceed the [default timeout of 60s set by the Process component](https://symfony.com/doc/current/components/process.html#process-timeout). When running cronjob from a controller, a timeout for running cronjobs 
-can be useful as the HTTP request might get killed by PHP due to a maximum execution limit. By specifying a timeout,
-all jobs get killed automatically, and the correct job result (which would not indicate any success) will be persisted
-(see [#26](https://github.com/shapecode/cron-bundle/issues/26#issuecomment-731738093)). A default value of `null` lets the Process component use its default timeout, otherwise the specified timeout in seconds (as `float`) is applied (see [Process component docs](https://symfony.com/doc/current/components/process.html#process-timeout)).
-**Important:** The timeout is applied to every cronjob, regardless from where (controller or CLI) it is executed.
+Configure a global timeout for all cron jobs (optional):
 
 ```yaml
+# config/packages/shapecode_cron.yaml
 shapecode_cron:
-    timeout: null # default. A number (of type float) can be specified
+    timeout: null  # null = no timeout, or specify seconds as float (e.g., 300.0)
 ```

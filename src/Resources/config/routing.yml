@@ -1,4 +1,0 @@
-cronjob_run:
-    path: /run
-    controller: Shapecode\Bundle\CronBundle\Controller\CronJobController
-    methods: GET

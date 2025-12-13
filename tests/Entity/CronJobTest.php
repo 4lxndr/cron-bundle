@@ -15,9 +15,9 @@ class CronJobTest extends TestCase
     public function testCreation(): void
     {
         $job = new CronJob('command', '@daily');
-        $job->setLastUse(new DatePoint());
+        $job->lastUse = new DatePoint();
         $job->calculateNextRun();
 
-        self::assertSame('command', $job->getCommand());
+        self::assertSame('command', $job->command);
     }
 }

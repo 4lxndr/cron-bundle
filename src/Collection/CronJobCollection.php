@@ -4,22 +4,24 @@ declare(strict_types=1);
 
 namespace Shapecode\Bundle\CronBundle\Collection;
 
-use Ramsey\Collection\Collection;
-use Ramsey\Collection\CollectionInterface;
+use Doctrine\Common\Collections\ArrayCollection;
 use Shapecode\Bundle\CronBundle\Entity\CronJob;
 
-/** @template-extends Collection<CronJob> */
-final class CronJobCollection extends Collection
+use function array_map;
+use function array_values;
+
+/** @extends ArrayCollection<int, CronJob> */
+final class CronJobCollection extends ArrayCollection
 {
     public function __construct(
         CronJob ...$cronJob,
     ) {
-        parent::__construct(CronJob::class, $cronJob);
+        parent::__construct(array_values($cronJob));
     }
 
-    /** @return CollectionInterface<string> */
-    public function mapToCommand(): CollectionInterface
+    /** @return array<int, string> */
+    public function mapToCommand(): array
     {
-        return $this->map(static fn (CronJob $o): string => $o->getCommand());
+        return array_map(static fn (CronJob $o): string => $o->command, $this->toArray());
     }
 }

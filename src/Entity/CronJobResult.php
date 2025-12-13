@@ -16,66 +16,53 @@ use function sprintf;
 class CronJobResult extends AbstractEntity
 {
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private DateTimeInterface $runAt;
+    public private(set) DateTimeInterface $runAt {
+        get => $this->runAt;
+    }
 
     #[ORM\Column(type: Types::FLOAT)]
-    private float $runTime;
+    public private(set) float $runTime {
+        get => $this->runTime;
+    }
 
     #[ORM\Column(type: Types::INTEGER)]
-    private int $statusCode;
+    public private(set) int $statusCode {
+        get => $this->statusCode;
+    }
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private string|null $output;
+    public private(set) ?string $output {
+        get => $this->output;
+    }
 
     #[ORM\ManyToOne(targetEntity: CronJob::class, cascade: ['persist'], inversedBy: 'results')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
-    private CronJob $cronJob;
+    public private(set) CronJob $cronJob {
+        get => $this->cronJob;
+    }
 
     public function __construct(
         CronJob $cronJob,
         float $runTime,
         int $statusCode,
-        string|null $output,
+        ?string $output,
         DateTimeInterface $runAt,
     ) {
-        $this->runTime    = $runTime;
+        $this->runTime = $runTime;
         $this->statusCode = $statusCode;
-        $this->output     = $output;
-        $this->cronJob    = $cronJob;
-        $this->runAt      = DateTime::createFromInterface($runAt);
-    }
-
-    public function getRunAt(): DateTimeInterface
-    {
-        return $this->runAt;
-    }
-
-    public function getRunTime(): float
-    {
-        return $this->runTime;
-    }
-
-    public function getStatusCode(): int
-    {
-        return $this->statusCode;
-    }
-
-    public function getOutput(): string|null
-    {
-        return $this->output;
-    }
-
-    public function getCronJob(): CronJob
-    {
-        return $this->cronJob;
+        $this->output = $output;
+        $this->cronJob = $cronJob;
+        $this->runAt = DateTime::createFromInterface($runAt);
+        $this->createdAt = null;
+        $this->updatedAt = null;
     }
 
     public function __toString(): string
     {
         return sprintf(
             '%s - %s',
-            $this->getCronJob()->getCommand(),
-            $this->getRunAt()->format('d.m.Y H:i P'),
+            $this->cronJob->command,
+            $this->runAt->format('d.m.Y H:i P'),
         );
     }
 }

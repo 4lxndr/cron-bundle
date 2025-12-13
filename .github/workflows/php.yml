@@ -1,4 +1,4 @@
-name: PHP Composer
+name: PHP Composer'8.4'
 
 on:
   push:
@@ -16,7 +16,7 @@ jobs:
 
     strategy:
       matrix:
-        php-versions: [ '8.3', '8.4' ]
+        php-versions: [ '8.4', '8.5' ]
         dependencies: [ 'locked', 'latest' ]
 
     steps:
@@ -27,6 +27,9 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-versions }}
+          extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, dom, filter, json
+          coverage: none
+          tools: composer:v2
 
       - name: Validate composer.json and composer.lock
         run: composer validate --strict -n
@@ -36,9 +39,6 @@ jobs:
         with:
           dependency-versions: ${{ matrix.dependencies }}
           composer-options: --prefer-dist --no-scripts
-
-      - name: Composer Dependency Analyser
-        run: composer cda
 
       - name: CS Check
         run: composer cs-check

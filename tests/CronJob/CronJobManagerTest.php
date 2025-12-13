@@ -18,7 +18,7 @@ final class CronJobManagerTest extends TestCase
         $expression  = '* * * * *';
         $commandName = 'value';
 
-        $command = $this->createStub(Command::class);
+        $command = self::createStub(Command::class);
         $command->method('getName')->willReturn($commandName);
 
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
@@ -40,14 +40,18 @@ final class CronJobManagerTest extends TestCase
         $jobs = $cronJobManager->getJobs();
 
         self::assertCount(1, $jobs);
-        self::assertSame($commandName, $jobs->first()->command);
-        self::assertSame($expression, $jobs->first()->expression);
+        $firstJob = $jobs->first();
+        self::assertNotFalse($firstJob);
+        self::assertSame($commandName, $firstJob->command);
+        self::assertSame($expression, $firstJob->expression);
 
         // Run second time to assert the same result.
         $jobs = $cronJobManager->getJobs();
 
         self::assertCount(1, $jobs);
-        self::assertSame($commandName, $jobs->first()->command);
-        self::assertSame($expression, $jobs->first()->expression);
+        $firstJob = $jobs->first();
+        self::assertNotFalse($firstJob);
+        self::assertSame($commandName, $firstJob->command);
+        self::assertSame($expression, $firstJob->expression);
     }
 }

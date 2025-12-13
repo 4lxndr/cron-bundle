@@ -24,16 +24,16 @@ final class CronJobCompilerPass implements CompilerPassInterface
 
         foreach ($tagged as $id => $configs) {
             foreach ($configs as $config) {
-                if (! is_array($config)) {
+                if (!is_array($config)) {
                     throw new RuntimeException('config must be an array', 1740941125172);
                 }
 
-                if (! isset($config['expression'])) {
+                if (!isset($config['expression'])) {
                     throw new RuntimeException('missing expression config', 1653426737628);
                 }
 
-                $expression   = $config['expression'];
-                $arguments    = $config['arguments'] ?? null;
+                $expression = $config['expression'];
+                $arguments = $config['arguments'] ?? null;
                 $maxInstances = $config['maxInstances'] ?? 1;
 
                 $definition->addMethodCall('addCommand', [

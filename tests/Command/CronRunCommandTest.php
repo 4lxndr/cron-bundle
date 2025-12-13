@@ -39,11 +39,11 @@ final class CronRunCommandTest extends TestCase
     {
         parent::setUp();
 
-        $this->kernel        = $this->createStub(Kernel::class);
-        $this->manager       = $this->createStub(EntityManagerInterface::class);
-        $this->commandHelper = $this->createStub(CommandHelper::class);
-        $this->cronJobRepo   = $this->createStub(CronJobRepository::class);
-        $this->input         = $this->createStub(InputInterface::class);
+        $this->kernel        = self::createStub(Kernel::class);
+        $this->manager       = self::createStub(EntityManagerInterface::class);
+        $this->commandHelper = self::createStub(CommandHelper::class);
+        $this->cronJobRepo   = self::createStub(CronJobRepository::class);
+        $this->input         = self::createStub(InputInterface::class);
         $this->output        = new BufferedOutput();
 
         $this->clock = new MockClock();
@@ -64,8 +64,8 @@ final class CronRunCommandTest extends TestCase
         $this->commandHelper->method('getPhpExecutable')->willReturn('php');
         $this->commandHelper->method('getTimeout')->willReturn(null);
 
-        $job = CronJob::create('pwd', '* * * * *');
-        $job->setNextRun(new DateTime());
+        $job = new CronJob('pwd', '* * * * *');
+        $job->nextRun = new DateTime();
 
         $this->cronJobRepo->method('findAll')->willReturn([
             $job,
@@ -84,10 +84,10 @@ final class CronRunCommandTest extends TestCase
         $this->commandHelper->method('getPhpExecutable')->willReturn('php');
         $this->commandHelper->method('getTimeout')->willReturn(30.0);
 
-        $this->manager = $this->createStub(EntityManagerInterface::class);
+        $this->manager = self::createStub(EntityManagerInterface::class);
 
-        $job = CronJob::create('pwd', '* * * * *');
-        $job->setNextRun(new DateTime());
+        $job = new CronJob('pwd', '* * * * *');
+        $job->nextRun = new DateTime();
 
         $this->cronJobRepo->method('findAll')->willReturn([
             $job,

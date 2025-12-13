@@ -40,25 +40,19 @@
         "symfony/http-kernel": "^7.4 || ^8.0",
         "symfony/config": "^7.4 || ^8.0",
         "symfony/console": "^7.4 || ^8.0",
-        "symfony/http-foundation": "^7.4 || ^8.0",
         "symfony/process": "^7.4 || ^8.0",
         "symfony/stopwatch": "^7.4 || ^8.0",
         "symfony/event-dispatcher": "^7.4 || ^8.0",
         "symfony/event-dispatcher-contracts": "^3.5 || ^4.0",
         "doctrine/doctrine-bundle": "^2.13",
         "doctrine/collections": "^2.2",
-        "doctrine/persistence": "^3.4 || ^4.0",
-        "doctrine/orm": "^2.20 || ^3.3",
-        "doctrine/dbal": "^3.9 || ^4.2",
+        "doctrine/persistence": "^4.1",
+        "doctrine/orm": "^3.5",
+        "doctrine/dbal": "^4.4",
         "psr/clock": "^1.0",
-        "dragonmantank/cron-expression": "^3.4",
-        "ramsey/collection": "^2.0"
+        "dragonmantank/cron-expression": "^3.6"
     },
     "require-dev":{
-        "shipmonk/composer-dependency-analyser": "^1.8",
-        "doctrine/coding-standard": "^12.0",
-        "roave/security-advisories": "dev-latest",
-        "squizlabs/php_codesniffer": "^3.11",
         "phpstan/phpstan": "^2.1",
         "phpstan/phpstan-deprecation-rules": "^2.0",
         "phpstan/phpstan-phpunit": "^2.0",
@@ -67,7 +61,8 @@
         "phpstan/phpstan-doctrine": "^2.0",
         "phpunit/phpunit": "^12.0",
         "symfony/var-dumper": "^7.4 || ^8.0",
-        "symfony/clock": "^7.4 || ^8.0"
+        "symfony/clock": "^7.4 || ^8.0",
+        "friendsofphp/php-cs-fixer": "^3.91"
     },
     "autoload": {
         "psr-4": {
@@ -81,17 +76,15 @@
     },
     "scripts": {
         "check": [
-            "@cda",
             "@cs-check",
             "@phpstan",
             "@phpunit"
         ],
-        "cda": "vendor/bin/composer-dependency-analyser --config=./composer-dependency-analyser.php",
-        "phpstan": "phpstan analyse --configuration=./phpstan.php --memory-limit=-1 --ansi",
-        "phpstan-update-baseline": "@phpstan --generate-baseline phpstan-baseline.php --allow-empty-baseline",
+        "phpstan": "phpstan analyse --configuration=./phpstan.neon --memory-limit=-1 --ansi",
+        "phpstan-update-baseline": "@phpstan --generate-baseline phpstan-baseline.neon --allow-empty-baseline",
         "phpunit": "phpunit --colors=always",
-        "cs-check": "phpcs -s",
-        "cs-fix": "phpcbf"
+        "cs-check": "vendor/bin/php-cs-fixer fix src --dry-run",
+        "cs-fix": "vendor/bin/php-cs-fixer fix src"
     },
     "extra": {
         "branch-alias": {

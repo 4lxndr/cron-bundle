@@ -13,40 +13,22 @@ abstract class AbstractEntity
     #[ORM\Column(type: Types::INTEGER, options: ['unsigned' => true])]
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'AUTO')]
-    protected int|null $id = null;
+    protected ?int $id = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    protected DateTimeInterface|null $createdAt = null;
+    public ?DateTimeInterface $createdAt {
+        get => $this->createdAt;
+        set => $this->createdAt = $value;
+    }
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    protected DateTimeInterface|null $updatedAt = null;
+    public ?DateTimeInterface $updatedAt {
+        get => $this->updatedAt;
+        set => $this->updatedAt = $value;
+    }
 
-    public function getId(): int|null
+    public function getId(): ?int
     {
         return $this->id;
-    }
-
-    public function setCreatedAt(DateTimeInterface $createdAt): static
-    {
-        $this->createdAt = $createdAt;
-
-        return $this;
-    }
-
-    public function getCreatedAt(): DateTimeInterface|null
-    {
-        return $this->createdAt;
-    }
-
-    public function setUpdatedAt(DateTimeInterface $updatedAt): static
-    {
-        $this->updatedAt = $updatedAt;
-
-        return $this;
-    }
-
-    public function getUpdatedAt(): DateTimeInterface|null
-    {
-        return $this->updatedAt;
     }
 }

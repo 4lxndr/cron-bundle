@@ -13,16 +13,16 @@ final class CronJobCounter
 
     public function increase(CronJobMetadata $metadata): void
     {
-        if (! array_key_exists($metadata->command, $this->counter)) {
+        if (!array_key_exists($metadata->command, $this->counter)) {
             $this->counter[$metadata->command] = 0;
         }
 
-        $this->counter[$metadata->command]++;
+        ++$this->counter[$metadata->command];
     }
 
     public function value(CronJobMetadata $metadata): int
     {
-        if (! array_key_exists($metadata->command, $this->counter)) {
+        if (!array_key_exists($metadata->command, $this->counter)) {
             return 0;
         }
 

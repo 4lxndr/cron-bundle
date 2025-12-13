@@ -21,8 +21,8 @@ final class ShapecodeCronExtension extends ConfigurableExtension
         array $mergedConfig,
         ContainerBuilder $container,
     ): void {
-        $locator = new FileLocator(__DIR__ . '/../Resources/config');
-        $loader  = new Loader\YamlFileLoader($container, $locator);
+        $locator = new FileLocator(__DIR__.'/../Resources/config');
+        $loader = new Loader\YamlFileLoader($container, $locator);
         $loader->load('services.yml');
 
         $definition = $container->getDefinition(CommandHelper::class);

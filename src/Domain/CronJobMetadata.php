@@ -14,18 +14,14 @@ final class CronJobMetadata
     private function __construct(
         public readonly string $expression,
         public readonly string $command,
-        public readonly string|null $arguments = null,
+        public readonly ?string $arguments = null,
         public readonly int $maxInstances = 1,
-        public readonly string|null $description = null,
+        public readonly ?string $description = null,
     ) {
     }
 
-    public static function createByCommand(
-        string $expression,
-        Command $command,
-        string|null $arguments = null,
-        int $maxInstances = 1,
-    ): CronJobMetadata {
+    public static function createByCommand(string $expression, Command $command, ?string $arguments = null, int $maxInstances = 1): self
+    {
         $commandName = $command->getName();
 
         if ($commandName === null) {

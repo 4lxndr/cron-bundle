@@ -26,10 +26,8 @@ final class CronStatusCommand extends Command
         parent::__construct();
     }
 
-    protected function execute(
-        InputInterface $input,
-        OutputInterface $output,
-    ): int {
+    protected function execute(InputInterface $input, OutputInterface $output): int
+    {
         $io = new CronStyle($input, $output);
 
         $io->title('Cron job status');
@@ -38,9 +36,9 @@ final class CronStatusCommand extends Command
             static fn (CronJob $cronJob): array => [
                 $cronJob->getId(),
                 $cronJob->getFullCommand(),
-                $cronJob->isEnable() ? $cronJob->getNextRun()->format('r') : 'Not scheduled',
-                $cronJob->getLastUse()?->format('r') ?? 'This job has not yet been run',
-                $cronJob->isEnable() ? 'Enabled' : 'Disabled',
+                $cronJob->enable ? $cronJob->nextRun->format('r') : 'Not scheduled',
+                $cronJob->lastUse?->format('r') ?? 'This job has not yet been run',
+                $cronJob->enable ? 'Enabled' : 'Disabled',
             ],
             $this->cronJobRepository->findAll(),
         );

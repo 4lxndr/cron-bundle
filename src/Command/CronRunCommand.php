@@ -28,7 +28,7 @@ use function sprintf;
     name: CronRunCommand::NAME,
     description: 'Runs any currently schedule cron jobs',
 )]
-final class CronRunCommand extends Command
+class CronRunCommand extends Command
 {
     public const NAME = 'shapecode:cron:run';
 
@@ -41,12 +41,10 @@ final class CronRunCommand extends Command
         parent::__construct();
     }
 
-    protected function execute(
-        InputInterface $input,
-        OutputInterface $output,
-    ): int {
+    protected function execute(InputInterface $input, OutputInterface $output): int
+    {
         $style = new CronStyle($input, $output);
-        $now   = DateTime::createFromImmutable($this->clock->now());
+        $now = DateTime::createFromImmutable($this->clock->now());
 
         $jobsToRun = $this->cronJobRepository->findAll();
 
@@ -61,19 +59,19 @@ final class CronRunCommand extends Command
         foreach ($jobsToRun as $job) {
             $style->section(sprintf('Running "%s"', $job->getFullCommand()));
 
-            if (! $job->isEnable()) {
+            if (!$job->enable) {
                 $style->notice('cronjob is disabled');
 
                 continue;
             }
 
-            if ($job->getNextRun() > $now) {
-                $style->notice(sprintf('cronjob will not be executed. Next run is: %s', $job->getNextRun()->format('r')));
+            if ($job->nextRun > $now) {
+                $style->notice(sprintf('cronjob will not be executed. Next run is: %s', $job->nextRun->format('r')));
 
                 continue;
             }
 
-            if ($job->getRunningInstances() >= $job->getMaxInstances()) {
+            if ($job->runningInstances >= $job->maxInstances) {
                 $style->notice('cronjob will not be executed. The number of maximum instances has been exceeded.');
                 continue;
             }
@@ -81,7 +79,7 @@ final class CronRunCommand extends Command
             $job->increaseRunningInstances();
             $process = $this->runJob($job);
 
-            $job->setLastUse($now);
+            $job->lastUse = $now;
 
             $this->entityManager->persist($job);
             $this->entityManager->flush();
@@ -125,14 +123,14 @@ final class CronRunCommand extends Command
                 $this->entityManager->refresh($job);
                 $job->decreaseRunningInstances();
 
-                if ($job->getRunningInstances() === 0) {
+                if ($job->runningInstances === 0) {
                     $job->calculateNextRun();
                 }
 
                 $this->entityManager->persist($job);
                 $this->entityManager->flush();
 
-                $processes->remove($running);
+                $processes->removeElement($running);
             }
 
             sleep(1);

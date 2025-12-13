@@ -48,10 +48,8 @@ final class CronProcessCommand extends Command
         $this->addArgument('cron', InputArgument::REQUIRED);
     }
 
-    protected function execute(
-        InputInterface $input,
-        OutputInterface $output,
-    ): int {
+    protected function execute(InputInterface $input, OutputInterface $output): int
+    {
         $io = new CronStyle($input, $output);
 
         $job = $this->cronJobRepository->find($input->getArgument('cron'));
@@ -63,11 +61,11 @@ final class CronProcessCommand extends Command
         }
 
         $command = sprintf('%s -n', $job->getFullCommand());
-        $watch   = sprintf('job-%s', str_replace(' ', '-', $command));
+        $watch = sprintf('job-%s', str_replace(' ', '-', $command));
 
         $io->title(sprintf('Running %s', $command));
 
-        $jobInput  = new StringInput($command);
+        $jobInput = new StringInput($command);
         $jobOutput = new BufferedOutput();
 
         if (
@@ -81,7 +79,7 @@ final class CronProcessCommand extends Command
 
         $this->stopwatch->start($watch);
 
-        if ($job->getRunningInstances() > $job->getMaxInstances()) {
+        if ($job->runningInstances > $job->maxInstances) {
             $statusCode = Command::INVALID;
         } else {
             try {
@@ -100,7 +98,7 @@ final class CronProcessCommand extends Command
 
         $this->stopwatch->stop($watch);
 
-        $status   = CronJobResultStatus::fromCommandStatus($statusCode);
+        $status = CronJobResultStatus::fromCommandStatus($statusCode);
         $duration = $this->stopwatch->getEvent($watch)->getDuration();
 
         $seconds = $duration > 0 ? number_format($duration / 1000, 4) : 0;
@@ -123,12 +121,8 @@ final class CronProcessCommand extends Command
         return $statusCode;
     }
 
-    private function recordJobResult(
-        CronJob $job,
-        float $timeTaken,
-        BufferedOutput $output,
-        int $statusCode,
-    ): void {
+    private function recordJobResult(CronJob $job, float $timeTaken, BufferedOutput $output, int $statusCode): void
+    {
         $buffer = $output->isQuiet() ? null : $output->fetch();
 
         $result = new CronJobResult(

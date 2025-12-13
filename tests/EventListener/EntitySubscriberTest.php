@@ -11,7 +11,7 @@ use Doctrine\Persistence\Event\LifecycleEventArgs;
 use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use Psr\Clock\ClockInterface;
-use Shapecode\Bundle\CronBundle\Entity\AbstractEntity;
+use Shapecode\Bundle\CronBundle\Entity\CronJob;
 use Shapecode\Bundle\CronBundle\EventListener\EntitySubscriber;
 use stdClass;
 
@@ -23,7 +23,7 @@ class EntitySubscriberTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->clock      = $this->createStub(ClockInterface::class);
+        $this->clock      = self::createStub(ClockInterface::class);
         $this->subscriber = new EntitySubscriber($this->clock);
     }
 
@@ -32,51 +32,51 @@ class EntitySubscriberTest extends TestCase
         $now = new DateTimeImmutable('2024-10-10 12:00:00');
         $this->clock->method('now')->willReturn($now);
 
-        $entity = $this->createMock(AbstractEntity::class);
+        $entity = new CronJob('test-command', '@daily');
 
-        $entity->expects(self::once())
-            ->method('setCreatedAt')
-            ->with(self::isInstanceOf(DateTime::class));
-
-        $entity->expects(self::once())
-            ->method('setUpdatedAt')
-            ->with(self::isInstanceOf(DateTime::class));
-
-        $entity->method('getCreatedAt')->willReturn(null);
-
-        $entityManager = $this->createStub(EntityManagerInterface::class);
+        $entityManager = self::createStub(EntityManagerInterface::class);
         $args          = new LifecycleEventArgs($entity, $entityManager);
 
         $this->subscriber->prePersist($args);
+
+        self::assertInstanceOf(DateTime::class, $entity->createdAt);
+        self::assertInstanceOf(DateTime::class, $entity->updatedAt);
+        self::assertEquals('2024-10-10 12:00:00', $entity->createdAt->format('Y-m-d H:i:s'));
+        self::assertEquals('2024-10-10 12:00:00', $entity->updatedAt->format('Y-m-d H:i:s'));
     }
 
     public function testPreUpdateSetsUpdatedAt(): void
     {
-        $now = new DateTimeImmutable('2024-10-10 12:00:00');
-        $this->clock->method('now')->willReturn($now);
+        $entity = new CronJob('test-command', '@daily');
+        $entityManager = self::createStub(EntityManagerInterface::class);
+        $args = new LifecycleEventArgs($entity, $entityManager);
 
-        $entity = $this->createMock(AbstractEntity::class);
+        // First, call prePersist to set createdAt and updatedAt
+        $initialTime = new DateTimeImmutable('2024-01-01 10:00:00');
+        $this->clock->method('now')->willReturn($initialTime);
+        $this->subscriber->prePersist($args);
 
-        $entity->expects(self::never())
-            ->method('setCreatedAt');
+        $originalCreatedAt = $entity->createdAt;
+        $originalUpdatedAt = $entity->updatedAt;
 
-        $entity->expects(self::once())
-            ->method('setUpdatedAt')
-            ->with(self::isInstanceOf(DateTime::class));
-
-        $entity->method('getCreatedAt')->willReturn(new DateTime());
-
-        $entityManager = $this->createStub(EntityManagerInterface::class);
-        $args          = new LifecycleEventArgs($entity, $entityManager);
-
+        // Then call preUpdate with a different time
+        $updateTime = new DateTimeImmutable('2024-10-10 12:00:00');
+        $this->clock = self::createStub(ClockInterface::class);
+        $this->clock->method('now')->willReturn($updateTime);
+        $this->subscriber = new EntitySubscriber($this->clock);
         $this->subscriber->preUpdate($args);
+
+        self::assertSame($originalCreatedAt, $entity->createdAt, 'createdAt should not change on update');
+        self::assertNotSame($originalUpdatedAt, $entity->updatedAt, 'updatedAt should change on update');
+        self::assertNotNull($entity->updatedAt);
+        self::assertEquals('2024-10-10 12:00:00', $entity->updatedAt->format('Y-m-d H:i:s'));
     }
 
     public function testEntityNotInstanceOfAbstractEntity(): void
     {
         $nonEntity = new stdClass();
 
-        $entityManager = $this->createStub(EntityManagerInterface::class);
+        $entityManager = self::createStub(EntityManagerInterface::class);
         $args          = new LifecycleEventArgs($nonEntity, $entityManager);
 
         $this->subscriber->prePersist($args);

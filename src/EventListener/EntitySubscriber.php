@@ -38,16 +38,16 @@ final class EntitySubscriber
     {
         $entity = $args->getObject();
 
-        if (! $entity instanceof AbstractEntity) {
+        if (!$entity instanceof AbstractEntity) {
             return;
         }
 
         $now = DateTime::createFromImmutable($this->clock->now());
 
-        if ($entity->getCreatedAt() === null) {
-            $entity->setCreatedAt($now);
+        if ($entity->createdAt === null) {
+            $entity->createdAt = $now;
         }
 
-        $entity->setUpdatedAt($now);
+        $entity->updatedAt = $now;
     }
 }

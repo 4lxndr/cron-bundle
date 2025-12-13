@@ -17,214 +17,126 @@ use Shapecode\Bundle\CronBundle\Repository\CronJobRepository;
 class CronJob extends AbstractEntity
 {
     #[ORM\Column(type: Types::STRING)]
-    private string $command;
+    public private(set) string $command {
+        get => $this->command;
+    }
 
     #[ORM\Column(type: Types::STRING, nullable: true)]
-    private string|null $arguments = null;
+    public ?string $arguments {
+        get => $this->arguments;
+        set => $this->arguments = $value;
+    }
 
     #[ORM\Column(type: Types::STRING, nullable: true)]
-    private string|null $description = null;
+    public ?string $description {
+        get => $this->description;
+        set => $this->description = $value;
+    }
 
     #[ORM\Column(type: Types::INTEGER, options: ['unsigned' => true, 'default' => 0])]
-    private int $runningInstances = 0;
+    public private(set) int $runningInstances {
+        get => $this->runningInstances;
+    }
 
     #[ORM\Column(type: Types::INTEGER, options: ['unsigned' => true, 'default' => 1])]
-    private int $maxInstances = 1;
+    public int $maxInstances {
+        get => $this->maxInstances;
+        set => $this->maxInstances = $value;
+    }
 
     #[ORM\Column(type: Types::INTEGER, options: ['unsigned' => true, 'default' => 1])]
-    private int $number = 1;
-
-    #[ORM\Column(type: Types::STRING)]
-    private string $period;
+    public int $number {
+        get => $this->number;
+        set => $this->number = $value;
+    }
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private DateTimeInterface|null $lastUse = null;
+    public ?DateTimeInterface $lastUse {
+        get => $this->lastUse;
+        set => $this->lastUse = $value !== null ? DateTime::createFromInterface($value) : null;
+    }
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private DateTimeInterface $nextRun;
+    public DateTimeInterface $nextRun {
+        get => $this->nextRun;
+        set => $this->nextRun = DateTime::createFromInterface($value);
+    }
 
-    /** @var Collection<int, CronJobResult>*/
+    /** @var Collection<int, CronJobResult> */
     #[ORM\OneToMany(targetEntity: CronJobResult::class, mappedBy: 'cronJob', cascade: ['persist', 'remove'], orphanRemoval: true)]
-    private Collection $results;
+    public private(set) Collection $results {
+        get => $this->results;
+    }
 
     #[ORM\Column(type: Types::BOOLEAN, options: ['default' => true])]
-    private bool $enable = true;
+    public bool $enable {
+        get => $this->enable;
+        set => $this->enable = $value;
+    }
 
-    public function __construct(
-        string $command,
-        string $period,
-    ) {
+    #[ORM\Column(type: Types::STRING)]
+    public string $period {
+        get => $this->period;
+        set => $this->period = $value;
+    }
+
+    public function __construct(string $command, string $period)
+    {
         $this->command = $command;
-        $this->period  = $period;
+        $this->arguments = null;
+        $this->description = null;
+        $this->runningInstances = 0;
+        $this->maxInstances = 1;
+        $this->number = 1;
+        $this->lastUse = null;
         $this->results = new ArrayCollection();
+        $this->enable = true;
+        $this->period = $period;
+        $this->createdAt = null;
+        $this->updatedAt = null;
 
         $this->calculateNextRun();
-    }
-
-    public static function create(
-        string $command,
-        string $period,
-    ): self {
-        return new self($command, $period);
-    }
-
-    public function getCommand(): string
-    {
-        return $this->command;
     }
 
     public function getFullCommand(): string
     {
         $arguments = '';
 
-        if ($this->getArguments() !== null) {
-            $arguments = ' ' . $this->getArguments();
+        if ($this->arguments !== null) {
+            $arguments = ' '.$this->arguments;
         }
 
-        return $this->getCommand() . $arguments;
+        return $this->command.$arguments;
     }
 
-    public function getArguments(): string|null
-    {
-        return $this->arguments;
-    }
-
-    public function setArguments(string|null $arguments): self
-    {
-        $this->arguments = $arguments;
-
-        return $this;
-    }
-
-    public function getDescription(): string|null
-    {
-        return $this->description;
-    }
-
-    public function setDescription(string|null $description): self
-    {
-        $this->description = $description;
-
-        return $this;
-    }
-
-    public function getRunningInstances(): int
-    {
-        return $this->runningInstances;
-    }
-
-    public function increaseRunningInstances(): self
+    public function increaseRunningInstances(): void
     {
         ++$this->runningInstances;
-
-        return $this;
     }
 
-    public function decreaseRunningInstances(): self
+    public function decreaseRunningInstances(): void
     {
         --$this->runningInstances;
-
-        return $this;
     }
 
-    public function getMaxInstances(): int
+    public function enable(): void
     {
-        return $this->maxInstances;
+        $this->enable = true;
     }
 
-    public function setMaxInstances(int $maxInstances): self
+    public function disable(): void
     {
-        $this->maxInstances = $maxInstances;
-
-        return $this;
+        $this->enable = false;
     }
 
-    public function getNumber(): int
+    public function calculateNextRun(): void
     {
-        return $this->number;
-    }
-
-    public function setNumber(int $number): self
-    {
-        $this->number = $number;
-
-        return $this;
-    }
-
-    public function getPeriod(): string
-    {
-        return $this->period;
-    }
-
-    public function setPeriod(string $period): self
-    {
-        $this->period = $period;
-
-        return $this;
-    }
-
-    public function getLastUse(): DateTimeInterface|null
-    {
-        return $this->lastUse;
-    }
-
-    public function setLastUse(DateTimeInterface $lastUse): self
-    {
-        $this->lastUse = DateTime::createFromInterface($lastUse);
-
-        return $this;
-    }
-
-    public function setNextRun(DateTimeInterface $nextRun): self
-    {
-        $this->nextRun = DateTime::createFromInterface($nextRun);
-
-        return $this;
-    }
-
-    public function getNextRun(): DateTimeInterface
-    {
-        return $this->nextRun;
-    }
-
-    /** @return Collection<int, CronJobResult> */
-    public function getResults(): Collection
-    {
-        return $this->results;
-    }
-
-    public function setEnable(bool $enable): self
-    {
-        $this->enable = $enable;
-
-        return $this;
-    }
-
-    public function isEnable(): bool
-    {
-        return $this->enable;
-    }
-
-    public function enable(): self
-    {
-        return $this->setEnable(true);
-    }
-
-    public function disable(): self
-    {
-        return $this->setEnable(false);
-    }
-
-    public function calculateNextRun(): self
-    {
-        $cron = new CronExpression($this->getPeriod());
-        $this->setNextRun($cron->getNextRunDate());
-
-        return $this;
+        $cron = new CronExpression($this->period);
+        $this->nextRun = $cron->getNextRunDate();
     }
 
     public function __toString(): string
     {
-        return $this->getCommand();
+        return $this->command;
     }
 }
