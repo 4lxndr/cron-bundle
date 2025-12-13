@@ -100,10 +100,16 @@ php bin/console shapecode:cron:status
 
 ## Configuration
 
-Configure a global timeout for all cron jobs (optional):
+Configure global settings for cron jobs (optional):
 
 ```yaml
 # config/packages/shapecode_cron.yaml
 shapecode_cron:
     timeout: null  # null = no timeout, or specify seconds as float (e.g., 300.0)
+    result_retention_hours: null  # null = keep all results, or specify hours as integer (e.g., 168 for 7 days)
 ```
+
+### Configuration Options
+
+- **timeout**: Global timeout for cron job execution in seconds. Set to `null` for no timeout, or specify a float value (e.g., `300.0` for 5 minutes).
+- **result_retention_hours**: Automatic cleanup period for `CronJobResult` records in hours. When set, old results will be automatically deleted during cron runs. Set to `null` to keep all results indefinitely, or specify an integer value (e.g., `168` for 7 days, `720` for 30 days).
