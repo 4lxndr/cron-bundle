@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shapecode\Bundle\CronBundle\Tests\Service;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Shapecode\Bundle\CronBundle\CronJob\CommandHelper;
 use Symfony\Component\HttpKernel\Kernel;
@@ -13,6 +14,7 @@ use function sprintf;
 
 use const PHP_BINARY;
 
+#[CoversClass(CommandHelper::class)]
 class CommandHelperTest extends TestCase
 {
     public function testGetConsoleBin(): void

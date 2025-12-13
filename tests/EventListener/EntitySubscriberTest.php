@@ -7,6 +7,7 @@ namespace Shapecode\Bundle\CronBundle\Tests\EventListener;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\Event\LifecycleEventArgs;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use Psr\Clock\ClockInterface;
@@ -14,6 +15,7 @@ use Shapecode\Bundle\CronBundle\Entity\CronJob;
 use Shapecode\Bundle\CronBundle\EventListener\EntitySubscriber;
 use stdClass;
 
+#[CoversClass(EntitySubscriber::class)]
 class EntitySubscriberTest extends TestCase
 {
     private ClockInterface & Stub $clock;

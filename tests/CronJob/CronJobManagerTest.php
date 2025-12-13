@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shapecode\Bundle\CronBundle\Tests\CronJob;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Shapecode\Bundle\CronBundle\CronJob\CronJobManager;
 use Shapecode\Bundle\CronBundle\Domain\CronJobMetadata;
@@ -11,6 +12,7 @@ use Shapecode\Bundle\CronBundle\Event\LoadJobsEvent;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
+#[CoversClass(CronJobManager::class)]
 final class CronJobManagerTest extends TestCase
 {
     public function testGetApplicationJobs(): void

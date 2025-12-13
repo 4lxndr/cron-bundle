@@ -7,6 +7,7 @@ namespace Shapecode\Bundle\CronBundle\Tests\Command;
 use DateTimeImmutable;
 use DateTimeInterface;
 use Doctrine\ORM\EntityManagerInterface;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use Shapecode\Bundle\CronBundle\Command\CronRunCommand;
@@ -19,6 +20,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\BufferedOutput;
 use Symfony\Component\HttpKernel\Kernel;
 
+#[CoversClass(CronRunCommand::class)]
 final class CronRunCommandTest extends TestCase
 {
     private Kernel & Stub $kernel;
