@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shapecode\Bundle\CronBundle\Command;
 
+use DateInterval;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Clock\ClockInterface;
@@ -13,6 +14,7 @@ use Shapecode\Bundle\CronBundle\CronJob\CommandHelper;
 use Shapecode\Bundle\CronBundle\Domain\CronJobRunning;
 use Shapecode\Bundle\CronBundle\Entity\CronJob;
 use Shapecode\Bundle\CronBundle\Repository\CronJobRepository;
+use Shapecode\Bundle\CronBundle\Repository\CronJobResultRepository;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -35,8 +37,10 @@ class CronRunCommand extends Command
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
         private readonly CronJobRepository $cronJobRepository,
+        private readonly CronJobResultRepository $cronJobResultRepository,
         private readonly CommandHelper $commandHelper,
         private readonly ClockInterface $clock,
+        private readonly ?int $resultRetentionHours = null,
     ) {
         parent::__construct();
     }
@@ -45,6 +49,12 @@ class CronRunCommand extends Command
     {
         $style = new CronStyle($input, $output);
         $now = DateTime::createFromImmutable($this->clock->now());
+
+        // Clean up old CronJobResult records if retention hours is configured
+        if ($this->resultRetentionHours !== null) {
+            $retentionThreshold = (clone $now)->sub(new DateInterval(sprintf('PT%dH', $this->resultRetentionHours)));
+            $this->cronJobResultRepository->deleteOldLogs($retentionThreshold);
+        }
 
         $jobsToRun = $this->cronJobRepository->findAll();
 

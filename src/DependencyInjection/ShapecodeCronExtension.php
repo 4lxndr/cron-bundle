@@ -6,6 +6,7 @@ namespace Shapecode\Bundle\CronBundle\DependencyInjection;
 
 use Reflector;
 use Shapecode\Bundle\CronBundle\Attribute\AsCronJob;
+use Shapecode\Bundle\CronBundle\Command\CronRunCommand;
 use Shapecode\Bundle\CronBundle\CronJob\CommandHelper;
 use Shapecode\Bundle\CronBundle\DependencyInjection\Compiler\CronJobCompilerPass;
 use Symfony\Component\Config\FileLocator;
@@ -27,6 +28,9 @@ final class ShapecodeCronExtension extends ConfigurableExtension
 
         $definition = $container->getDefinition(CommandHelper::class);
         $definition->setArgument('$timeout', $mergedConfig['timeout']);
+
+        $cronRunDefinition = $container->getDefinition(CronRunCommand::class);
+        $cronRunDefinition->setArgument('$resultRetentionHours', $mergedConfig['result_retention_hours']);
 
         $container->registerAttributeForAutoconfiguration(
             AsCronJob::class,

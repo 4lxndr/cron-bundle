@@ -10,7 +10,7 @@ use Doctrine\Persistence\ManagerRegistry;
 use Shapecode\Bundle\CronBundle\Entity\CronJobResult;
 
 /** @extends ServiceEntityRepository<CronJobResult> */
-final class CronJobResultRepository extends ServiceEntityRepository
+class CronJobResultRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
@@ -19,13 +19,12 @@ final class CronJobResultRepository extends ServiceEntityRepository
 
     public function deleteOldLogs(DateTimeInterface $time): void
     {
-        $this->getEntityManager()->createQuery(
-            <<<'DQL'
-                    DELETE FROM Shapecode\Bundle\CronBundle\Entity\CronJobResult d
-                    WHERE d.createdAt <= :createdAt
-                DQL,
-        )
+        $qb = $this->createQueryBuilder('d');
+
+        $qb->delete()
+            ->where('d.createdAt <= :createdAt')
             ->setParameter('createdAt', $time)
+            ->getQuery()
             ->execute();
     }
 }
