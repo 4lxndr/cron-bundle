@@ -39,6 +39,10 @@ final class ShapecodeCronExtension extends ConfigurableExtension
                     'expression' => $attribute->schedule,
                     'arguments' => $attribute->arguments,
                     'maxInstances' => $attribute->maxInstances,
+                    'tags' => $attribute->tags,
+                    'dependsOn' => $attribute->dependsOn,
+                    'dependencyMode' => $attribute->dependencyMode->value,
+                    'onDependencyFailure' => $attribute->onDependencyFailure->value,
                 ]);
             },
         );

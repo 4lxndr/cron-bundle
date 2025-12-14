@@ -12,6 +12,7 @@ use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use Shapecode\Bundle\CronBundle\Command\CronRunCommand;
 use Shapecode\Bundle\CronBundle\CronJob\CommandHelper;
+use Shapecode\Bundle\CronBundle\CronJob\DependencyResolver;
 use Shapecode\Bundle\CronBundle\Entity\CronJob;
 use Shapecode\Bundle\CronBundle\Repository\CronJobRepository;
 use Shapecode\Bundle\CronBundle\Repository\CronJobResultRepository;
@@ -32,6 +33,8 @@ final class CronRunCommandTest extends TestCase
     private CronJobRepository & Stub $cronJobRepo;
 
     private CronJobResultRepository & Stub $cronJobResultRepo;
+
+    private DependencyResolver $dependencyResolver;
 
     private CronRunCommand $command;
 
@@ -55,12 +58,16 @@ final class CronRunCommandTest extends TestCase
 
         $this->clock = new MockClock();
 
+        // Create a real DependencyResolver (it's final and cannot be mocked)
+        $this->dependencyResolver = new DependencyResolver($this->cronJobResultRepo);
+
         $this->command = new CronRunCommand(
             $this->manager,
             $this->cronJobRepo,
             $this->cronJobResultRepo,
             $this->commandHelper,
             $this->clock,
+            $this->dependencyResolver,
         );
     }
 
@@ -144,6 +151,7 @@ final class CronRunCommandTest extends TestCase
             $cronJobResultRepoMock,
             $this->commandHelper,
             $clock,
+            $this->dependencyResolver,
             24, // 24 hours retention
         );
 
@@ -182,6 +190,7 @@ final class CronRunCommandTest extends TestCase
             $cronJobResultRepoMock,
             $this->commandHelper,
             $this->clock,
+            $this->dependencyResolver,
             null, // No retention configured
         );
 

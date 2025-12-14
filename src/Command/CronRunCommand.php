@@ -10,7 +10,9 @@ use Psr\Clock\ClockInterface;
 use Shapecode\Bundle\CronBundle\Collection\CronJobRunningCollection;
 use Shapecode\Bundle\CronBundle\Console\Style\CronStyle;
 use Shapecode\Bundle\CronBundle\CronJob\CommandHelper;
+use Shapecode\Bundle\CronBundle\CronJob\DependencyResolver;
 use Shapecode\Bundle\CronBundle\Domain\CronJobRunning;
+use Shapecode\Bundle\CronBundle\Domain\DependencyFailureMode;
 use Shapecode\Bundle\CronBundle\Entity\CronJob;
 use Shapecode\Bundle\CronBundle\Repository\CronJobRepository;
 use Shapecode\Bundle\CronBundle\Repository\CronJobResultRepository;
@@ -39,6 +41,7 @@ class CronRunCommand extends Command
         private readonly CronJobResultRepository $cronJobResultRepository,
         private readonly CommandHelper $commandHelper,
         private readonly ClockInterface $clock,
+        private readonly DependencyResolver $dependencyResolver,
         private readonly ?int $resultRetentionHours = null,
     ) {
         parent::__construct();
@@ -83,6 +86,33 @@ class CronRunCommand extends Command
             if ($job->runningInstances >= $job->maxInstances) {
                 $style->notice('cronjob will not be executed. The number of maximum instances has been exceeded.');
                 continue;
+            }
+
+            // Check dependencies
+            $dependencyCheck = $this->dependencyResolver->canJobRun($job);
+            if (!$dependencyCheck['canRun']) {
+                $style->notice(sprintf(
+                    'cronjob will not be executed. %s',
+                    $dependencyCheck['reason'],
+                ));
+
+                // Handle based on failure mode
+                match ($job->onDependencyFailure) {
+                    DependencyFailureMode::SKIP => null, // Already skipping
+                    DependencyFailureMode::DISABLE => (function () use ($job, $style): void {
+                        $job->disable();
+                        $this->entityManager->persist($job);
+                        $this->entityManager->flush();
+                        $style->warning('Job has been disabled due to dependency failure.');
+                    })(),
+                    DependencyFailureMode::RUN => (function () use ($style): void {
+                        $style->notice('Running anyway due to onDependencyFailure=RUN setting.');
+                    })(),
+                };
+
+                if ($job->onDependencyFailure !== DependencyFailureMode::RUN) {
+                    continue;
+                }
             }
 
             $job->increaseRunningInstances();

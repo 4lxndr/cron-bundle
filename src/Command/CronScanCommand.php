@@ -7,7 +7,9 @@ namespace Shapecode\Bundle\CronBundle\Command;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Clock\ClockInterface;
 use Shapecode\Bundle\CronBundle\Console\Style\CronStyle;
+use Shapecode\Bundle\CronBundle\CronJob\CommandRegistry;
 use Shapecode\Bundle\CronBundle\CronJob\CronJobManager;
+use Shapecode\Bundle\CronBundle\CronJob\DependencyResolver;
 use Shapecode\Bundle\CronBundle\Domain\CronJobCounter;
 use Shapecode\Bundle\CronBundle\Domain\CronJobMetadata;
 use Shapecode\Bundle\CronBundle\Entity\CronJob;
@@ -19,6 +21,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 use function array_search;
+use function implode;
 use function in_array;
 use function sprintf;
 
@@ -33,6 +36,8 @@ final class CronScanCommand extends Command
         private readonly EntityManagerInterface $entityManager,
         private readonly CronJobRepository $cronJobRepository,
         private readonly ClockInterface $clock,
+        private readonly CommandRegistry $commandRegistry,
+        private readonly DependencyResolver $dependencyResolver,
     ) {
         parent::__construct();
     }
@@ -56,6 +61,10 @@ final class CronScanCommand extends Command
         // List the known jobs
         $cronJobs = $this->cronJobRepository->findAllCollection();
         $knownJobs = $cronJobs->mapToCommand();
+
+        // First pass: Create/update jobs without dependencies
+        /** @var array<string, CronJob> $jobMap */
+        $jobMap = [];
 
         $counter = new CronJobCounter();
         foreach ($this->cronJobManager->getJobs() as $jobMetadata) {
@@ -81,11 +90,15 @@ final class CronScanCommand extends Command
 
                 $currentJob->description = $jobMetadata->description;
                 $currentJob->arguments = $jobMetadata->arguments;
+                $currentJob->tags = $jobMetadata->tags;
+                $currentJob->dependencyMode = $jobMetadata->dependencyMode;
+                $currentJob->onDependencyFailure = $jobMetadata->onDependencyFailure;
 
                 $io->text(sprintf('command: %s', $jobMetadata->command));
                 $io->text(sprintf('arguments: %s', $jobMetadata->arguments));
                 $io->text(sprintf('expression: %s', $jobMetadata->expression));
                 $io->text(sprintf('instances: %s', $jobMetadata->maxInstances));
+                $io->text(sprintf('tags: %s', implode(', ', $jobMetadata->tags)));
 
                 if ($currentJob->period !== $jobMetadata->expression || $currentJob->maxInstances !== $jobMetadata->maxInstances) {
                     $currentJob->period = $jobMetadata->expression;
@@ -95,8 +108,44 @@ final class CronScanCommand extends Command
                     $currentJob->calculateNextRun();
                     $io->notice('cronjob updated');
                 }
+
+                // Store for dependency resolution
+                $jobMap[$command] = $currentJob;
             } else {
-                $this->newJobFound($io, $jobMetadata, $defaultDisabled, $counter->value($jobMetadata));
+                $newJob = $this->newJobFound($io, $jobMetadata, $defaultDisabled, $counter->value($jobMetadata));
+                $jobMap[$command] = $newJob;
+            }
+        }
+
+        // Second pass: Resolve and set up dependencies
+        $io->title('resolving dependencies');
+        $counter = new CronJobCounter();
+        foreach ($this->cronJobManager->getJobs() as $jobMetadata) {
+            $counter->increase($jobMetadata);
+            $currentJob = $jobMap[$jobMetadata->command] ?? null;
+            if ($currentJob === null) {
+                continue;
+            }
+
+            // Clear existing dependencies
+            $currentJob->clearDependencies();
+
+            // Resolve class names to command names
+            $dependencyCommands = $this->commandRegistry->resolveClassNames($jobMetadata->dependsOnClasses);
+
+            // Set up dependencies
+            foreach ($dependencyCommands as $depCommandName) {
+                $depJob = $jobMap[$depCommandName] ?? null;
+                if ($depJob !== null) {
+                    $currentJob->addDependency($depJob);
+                    $io->text(sprintf('  "%s" depends on "%s"', $currentJob->command, $depJob->command));
+                } else {
+                    $io->warning(sprintf(
+                        'Job "%s" depends on "%s" which was not found',
+                        $currentJob->command,
+                        $depCommandName,
+                    ));
+                }
             }
         }
 
@@ -121,16 +170,33 @@ final class CronScanCommand extends Command
 
         $this->entityManager->flush();
 
+        // Check for circular dependencies
+        $io->title('checking for circular dependencies');
+        $allJobs = $this->cronJobRepository->findAll();
+        $circles = $this->dependencyResolver->detectCircularDependencies($allJobs);
+
+        if ($circles !== []) {
+            $io->warning('Circular dependencies detected:');
+            foreach ($circles as $circle) {
+                $io->text('  '.$circle);
+            }
+        } else {
+            $io->success('No circular dependencies found');
+        }
+
         return Command::SUCCESS;
     }
 
-    private function newJobFound(CronStyle $io, CronJobMetadata $metadata, bool $defaultDisabled, int $counter): void
+    private function newJobFound(CronStyle $io, CronJobMetadata $metadata, bool $defaultDisabled, int $counter): CronJob
     {
         $newJob = new CronJob($metadata->command, $metadata->expression);
         $newJob->arguments = $metadata->arguments;
         $newJob->description = $metadata->description;
         $newJob->enable = !$defaultDisabled;
         $newJob->number = $counter;
+        $newJob->tags = $metadata->tags;
+        $newJob->dependencyMode = $metadata->dependencyMode;
+        $newJob->onDependencyFailure = $metadata->onDependencyFailure;
         $newJob->calculateNextRun();
 
         $io->success(sprintf(
@@ -140,5 +206,7 @@ final class CronScanCommand extends Command
         ));
 
         $this->entityManager->persist($newJob);
+
+        return $newJob;
     }
 }

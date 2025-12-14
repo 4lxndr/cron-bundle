@@ -11,17 +11,37 @@ use function str_replace;
 
 final class CronJobMetadata
 {
+    /**
+     * @param list<string> $tags
+     * @param list<class-string> $dependsOnClasses
+     */
     private function __construct(
         public readonly string $expression,
         public readonly string $command,
         public readonly ?string $arguments = null,
         public readonly int $maxInstances = 1,
         public readonly ?string $description = null,
+        public readonly array $tags = [],
+        public readonly array $dependsOnClasses = [],
+        public readonly DependencyMode $dependencyMode = DependencyMode::AND,
+        public readonly DependencyFailureMode $onDependencyFailure = DependencyFailureMode::SKIP,
     ) {
     }
 
-    public static function createByCommand(string $expression, Command $command, ?string $arguments = null, int $maxInstances = 1): self
-    {
+    /**
+     * @param list<string> $tags
+     * @param list<class-string> $dependsOnClasses
+     */
+    public static function createByCommand(
+        string $expression,
+        Command $command,
+        ?string $arguments = null,
+        int $maxInstances = 1,
+        array $tags = [],
+        array $dependsOnClasses = [],
+        DependencyMode $dependencyMode = DependencyMode::AND,
+        DependencyFailureMode $onDependencyFailure = DependencyFailureMode::SKIP,
+    ): self {
         $commandName = $command->getName();
 
         if ($commandName === null) {
@@ -34,6 +54,10 @@ final class CronJobMetadata
             $arguments,
             $maxInstances,
             $command->getDescription(),
+            $tags,
+            $dependsOnClasses,
+            $dependencyMode,
+            $onDependencyFailure,
         );
     }
 }

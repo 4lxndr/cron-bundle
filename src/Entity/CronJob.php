@@ -10,7 +10,11 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Shapecode\Bundle\CronBundle\Domain\DependencyFailureMode;
+use Shapecode\Bundle\CronBundle\Domain\DependencyMode;
 use Shapecode\Bundle\CronBundle\Repository\CronJobRepository;
+
+use function in_array;
 
 #[ORM\Entity(repositoryClass: CronJobRepository::class)]
 class CronJob extends AbstractEntity
@@ -79,6 +83,34 @@ class CronJob extends AbstractEntity
         set => $this->period = $value;
     }
 
+    /** @var list<string> */
+    #[ORM\Column(type: Types::JSON)]
+    public array $tags {
+        get => $this->tags;
+        set => $this->tags = $value;
+    }
+
+    #[ORM\Column(type: Types::STRING, enumType: DependencyMode::class)]
+    public DependencyMode $dependencyMode {
+        get => $this->dependencyMode;
+        set => $this->dependencyMode = $value;
+    }
+
+    #[ORM\Column(type: Types::STRING, enumType: DependencyFailureMode::class)]
+    public DependencyFailureMode $onDependencyFailure {
+        get => $this->onDependencyFailure;
+        set => $this->onDependencyFailure = $value;
+    }
+
+    /** @var Collection<int, CronJob> */
+    #[ORM\ManyToMany(targetEntity: self::class)]
+    #[ORM\JoinTable(name: 'cron_job_dependencies')]
+    #[ORM\JoinColumn(name: 'cron_job_id', referencedColumnName: 'id')]
+    #[ORM\InverseJoinColumn(name: 'depends_on_id', referencedColumnName: 'id')]
+    public private(set) Collection $dependencies {
+        get => $this->dependencies;
+    }
+
     public function __construct(string $command, string $period)
     {
         $this->command = $command;
@@ -91,6 +123,10 @@ class CronJob extends AbstractEntity
         $this->results = new ArrayCollection();
         $this->enable = true;
         $this->period = $period;
+        $this->tags = [];
+        $this->dependencies = new ArrayCollection();
+        $this->dependencyMode = DependencyMode::AND;
+        $this->onDependencyFailure = DependencyFailureMode::SKIP;
         $this->createdAt = null;
         $this->updatedAt = null;
 
@@ -132,6 +168,39 @@ class CronJob extends AbstractEntity
     {
         $cron = new CronExpression($this->period);
         $this->nextRun = DateTimeImmutable::createFromMutable($cron->getNextRunDate());
+    }
+
+    public function addDependency(self $dependency): void
+    {
+        if (!$this->dependencies->contains($dependency)) {
+            $this->dependencies->add($dependency);
+        }
+    }
+
+    public function removeDependency(self $dependency): void
+    {
+        $this->dependencies->removeElement($dependency);
+    }
+
+    public function clearDependencies(): void
+    {
+        $this->dependencies->clear();
+    }
+
+    /** @param list<string> $tags */
+    public function hasTags(array $tags): bool
+    {
+        if ($tags === []) {
+            return true; // Empty search matches all
+        }
+
+        foreach ($tags as $tag) {
+            if (!in_array($tag, $this->tags, true)) {
+                return false; // If any tag doesn't match, return false
+            }
+        }
+
+        return true; // All tags matched
     }
 
     public function __toString(): string

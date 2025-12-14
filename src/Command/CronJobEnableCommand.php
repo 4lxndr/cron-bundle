@@ -11,9 +11,11 @@ use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 use function assert;
+use function is_array;
 use function is_string;
 use function sprintf;
 
@@ -33,7 +35,8 @@ final class CronJobEnableCommand extends Command
     protected function configure(): void
     {
         $this
-            ->addArgument('job', InputArgument::REQUIRED, 'Name or id of the job to disable');
+            ->addArgument('job', InputArgument::REQUIRED, 'Name or id of the job to enable')
+            ->addOption('tags', 't', InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Filter by tags');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -43,7 +46,12 @@ final class CronJobEnableCommand extends Command
         $nameOrId = $input->getArgument('job');
         assert(is_string($nameOrId));
 
-        $jobs = $this->cronJobRepository->findByCommandOrId($nameOrId);
+        $tags = $input->getOption('tags');
+        assert(is_array($tags));
+        /** @var list<string> $tags */
+        $jobs = $tags === []
+            ? $this->cronJobRepository->findByCommandOrId($nameOrId)
+            : $this->cronJobRepository->findByCommandOrIdWithTags($nameOrId, $tags);
 
         if ($jobs->isEmpty()) {
             $io->error(sprintf('Couldn\'t find a job by the name or id of %s', $nameOrId));

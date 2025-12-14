@@ -7,6 +7,8 @@ namespace Shapecode\Bundle\CronBundle\Tests\Entity;
 use DateTimeImmutable;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
+use Shapecode\Bundle\CronBundle\Domain\DependencyFailureMode;
+use Shapecode\Bundle\CronBundle\Domain\DependencyMode;
 use Shapecode\Bundle\CronBundle\Entity\CronJob;
 
 #[CoversClass(CronJob::class)]
@@ -153,5 +155,151 @@ class CronJobTest extends TestCase
 
         $job->lastUse = null;
         self::assertNull($job->lastUse);
+    }
+
+    public function testDefaultTagsAndDependencies(): void
+    {
+        $job = new CronJob('test-command', '@daily');
+
+        self::assertSame([], $job->tags);
+        self::assertSame(DependencyMode::AND, $job->dependencyMode);
+        self::assertSame(DependencyFailureMode::SKIP, $job->onDependencyFailure);
+        self::assertCount(0, $job->dependencies);
+    }
+
+    public function testAddDependency(): void
+    {
+        $job = new CronJob('test-command', '@daily');
+        $dependency = new CronJob('dependency-command', '@daily');
+
+        self::assertCount(0, $job->dependencies);
+
+        $job->addDependency($dependency);
+
+        self::assertCount(1, $job->dependencies);
+        self::assertTrue($job->dependencies->contains($dependency));
+    }
+
+    public function testAddDependencyPreventssDuplicates(): void
+    {
+        $job = new CronJob('test-command', '@daily');
+        $dependency = new CronJob('dependency-command', '@daily');
+
+        $job->addDependency($dependency);
+        $job->addDependency($dependency); // Add same dependency again
+
+        self::assertCount(1, $job->dependencies);
+    }
+
+    public function testRemoveDependency(): void
+    {
+        $job = new CronJob('test-command', '@daily');
+        $dependency = new CronJob('dependency-command', '@daily');
+
+        $job->addDependency($dependency);
+        self::assertCount(1, $job->dependencies);
+
+        $job->removeDependency($dependency);
+
+        self::assertCount(0, $job->dependencies);
+        self::assertFalse($job->dependencies->contains($dependency));
+    }
+
+    public function testRemoveNonExistentDependency(): void
+    {
+        $job = new CronJob('test-command', '@daily');
+        $dependency = new CronJob('dependency-command', '@daily');
+
+        // Remove dependency that was never added
+        $job->removeDependency($dependency);
+
+        self::assertCount(0, $job->dependencies);
+    }
+
+    public function testClearDependencies(): void
+    {
+        $job = new CronJob('test-command', '@daily');
+        $dependency1 = new CronJob('dependency1', '@daily');
+        $dependency2 = new CronJob('dependency2', '@daily');
+
+        $job->addDependency($dependency1);
+        $job->addDependency($dependency2);
+
+        self::assertCount(2, $job->dependencies);
+
+        $job->clearDependencies();
+
+        self::assertCount(0, $job->dependencies);
+    }
+
+    public function testHasTagsWithNoTags(): void
+    {
+        $job = new CronJob('test-command', '@daily');
+
+        self::assertFalse($job->hasTags(['critical']));
+        self::assertTrue($job->hasTags([])); // Empty search matches
+    }
+
+    public function testHasTagsWithSingleMatchingTag(): void
+    {
+        $job = new CronJob('test-command', '@daily');
+        $job->tags = ['critical', 'reporting'];
+
+        self::assertTrue($job->hasTags(['critical']));
+        self::assertTrue($job->hasTags(['reporting']));
+    }
+
+    public function testHasTagsWithMultipleMatchingTags(): void
+    {
+        $job = new CronJob('test-command', '@daily');
+        $job->tags = ['critical', 'reporting', 'nightly'];
+
+        self::assertTrue($job->hasTags(['critical', 'reporting']));
+        self::assertTrue($job->hasTags(['nightly', 'critical']));
+    }
+
+    public function testHasTagsWithNonMatchingTag(): void
+    {
+        $job = new CronJob('test-command', '@daily');
+        $job->tags = ['critical', 'reporting'];
+
+        self::assertFalse($job->hasTags(['nightly']));
+        self::assertFalse($job->hasTags(['critical', 'nightly'])); // One doesn't match
+    }
+
+    public function testHasTagsIsCaseSensitive(): void
+    {
+        $job = new CronJob('test-command', '@daily');
+        $job->tags = ['Critical'];
+
+        self::assertFalse($job->hasTags(['critical'])); // Different case
+        self::assertTrue($job->hasTags(['Critical'])); // Exact match
+    }
+
+    public function testSetTags(): void
+    {
+        $job = new CronJob('test-command', '@daily');
+
+        $job->tags = ['tag1', 'tag2', 'tag3'];
+
+        self::assertSame(['tag1', 'tag2', 'tag3'], $job->tags);
+    }
+
+    public function testSetDependencyMode(): void
+    {
+        $job = new CronJob('test-command', '@daily');
+
+        $job->dependencyMode = DependencyMode::OR;
+
+        self::assertSame(DependencyMode::OR, $job->dependencyMode);
+    }
+
+    public function testSetOnDependencyFailure(): void
+    {
+        $job = new CronJob('test-command', '@daily');
+
+        $job->onDependencyFailure = DependencyFailureMode::DISABLE;
+
+        self::assertSame(DependencyFailureMode::DISABLE, $job->onDependencyFailure);
     }
 }
