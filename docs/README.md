@@ -6,6 +6,10 @@
 
 A Symfony bundle for managing scheduled cron jobs within your application.
 
+## Acknowledgments
+
+This bundle builds upon the foundation provided by [shapecode/cron-bundle](https://github.com/shapecode/cron-bundle). Thanks to the original authors and contributors for their excellent work.
+
 ## Requirements
 
 - PHP 8.4+

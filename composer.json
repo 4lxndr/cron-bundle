@@ -1,6 +1,6 @@
 {
     "name": "4lxndr/cron-bundle",
-    "description": "This bundle provides scheduled execution of Symfony commands",
+    "description": "Symfony bundle for scheduled command execution with dependency resolution, job tagging, and automatic failure handling",
     "keywords": [
         "cron",
         "cronjob",
@@ -8,6 +8,13 @@
         "execute",
         "interval",
         "schedule",
+        "dependency",
+        "dependencies",
+        "tags",
+        "tagging",
+        "automation",
+        "workflow",
+        "job-scheduler",
         "shapecode",
         "symfony",
         "time",
@@ -15,22 +22,16 @@
     ],
     "type": "symfony-bundle",
     "license": "MIT",
-    "homepage": "https://github.com/shapecode/cron-bundle",
+    "homepage": "https://github.com/4lxndr/cron-bundle",
     "support": {
-        "email": "support@shapeocode.de",
-        "issues": "https://github.com/shapecode/cron-bundle/issues",
-        "source": "https://github.com/shapecode/cron-bundle/releases",
-        "wiki": "https://github.com/shapecode/cron-bundle/wiki"
+        "issues": "https://github.com/4lxndr/cron-bundle/issues",
+        "source": "https://github.com/4lxndr/cron-bundle/releases",
+        "wiki": "https://github.com/4lxndr/cron-bundle/wiki"
     },
     "authors": [
         {
-            "name": "Nikita Loges",
-            "homepage": "https://loges.one",
-            "email": "dev@loges.one"
-        },
-        {
             "name": "Contributors",
-            "homepage": "https://github.com/shapecode/cron-bundle/graphs/contributors"
+            "homepage": "https://github.com/4lxndr/cron-bundle/graphs/contributors"
         }
     ],
     "require": {
