@@ -84,20 +84,20 @@ class CronJob extends AbstractEntity
     }
 
     /** @var list<string> */
-    #[ORM\Column(type: Types::JSON)]
+    #[ORM\Column(type: Types::JSON, options: ['default' => '[]'])]
     public array $tags {
         get => $this->tags;
         set => $this->tags = $value;
     }
 
-    #[ORM\Column(type: Types::STRING, enumType: DependencyMode::class)]
-    public DependencyMode $dependencyMode {
+    #[ORM\Column(type: Types::STRING, nullable: true, enumType: DependencyMode::class)]
+    public ?DependencyMode $dependencyMode {
         get => $this->dependencyMode;
         set => $this->dependencyMode = $value;
     }
 
-    #[ORM\Column(type: Types::STRING, enumType: DependencyFailureMode::class)]
-    public DependencyFailureMode $onDependencyFailure {
+    #[ORM\Column(type: Types::STRING, nullable: true, enumType: DependencyFailureMode::class)]
+    public ?DependencyFailureMode $onDependencyFailure {
         get => $this->onDependencyFailure;
         set => $this->onDependencyFailure = $value;
     }
@@ -125,8 +125,8 @@ class CronJob extends AbstractEntity
         $this->period = $period;
         $this->tags = [];
         $this->dependencies = new ArrayCollection();
-        $this->dependencyMode = DependencyMode::AND;
-        $this->onDependencyFailure = DependencyFailureMode::SKIP;
+        $this->dependencyMode = null;
+        $this->onDependencyFailure = null;
         $this->createdAt = null;
         $this->updatedAt = null;
 

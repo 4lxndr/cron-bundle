@@ -84,8 +84,8 @@ final class CronStatusCommand extends Command
                         $cronJob->dependencies->toArray(),
                     );
                     $row[] = implode(', ', $depNames);
-                    $row[] = $cronJob->dependencyMode->value;
-                    $row[] = $cronJob->onDependencyFailure->value;
+                    $row[] = $cronJob->dependencyMode !== null ? $cronJob->dependencyMode->value : 'AND';
+                    $row[] = $cronJob->onDependencyFailure !== null ? $cronJob->onDependencyFailure->value : 'SKIP';
                 }
 
                 return $row;

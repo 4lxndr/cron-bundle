@@ -162,8 +162,8 @@ class CronJobTest extends TestCase
         $job = new CronJob('test-command', '@daily');
 
         self::assertSame([], $job->tags);
-        self::assertSame(DependencyMode::AND, $job->dependencyMode);
-        self::assertSame(DependencyFailureMode::SKIP, $job->onDependencyFailure);
+        self::assertNull($job->dependencyMode);
+        self::assertNull($job->onDependencyFailure);
         self::assertCount(0, $job->dependencies);
     }
 
@@ -301,5 +301,27 @@ class CronJobTest extends TestCase
         $job->onDependencyFailure = DependencyFailureMode::DISABLE;
 
         self::assertSame(DependencyFailureMode::DISABLE, $job->onDependencyFailure);
+    }
+
+    public function testDependencyModeCanBeSetToNull(): void
+    {
+        $job = new CronJob('test-command', '@daily');
+        $job->dependencyMode = DependencyMode::OR;
+
+        self::assertSame(DependencyMode::OR, $job->dependencyMode);
+
+        $job->dependencyMode = null;
+        self::assertNull($job->dependencyMode);
+    }
+
+    public function testOnDependencyFailureCanBeSetToNull(): void
+    {
+        $job = new CronJob('test-command', '@daily');
+        $job->onDependencyFailure = DependencyFailureMode::DISABLE;
+
+        self::assertSame(DependencyFailureMode::DISABLE, $job->onDependencyFailure);
+
+        $job->onDependencyFailure = null;
+        self::assertNull($job->onDependencyFailure);
     }
 }

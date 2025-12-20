@@ -98,6 +98,7 @@ class CronRunCommand extends Command
 
                 // Handle based on failure mode
                 match ($job->onDependencyFailure) {
+                    null => null, // Default to SKIP behavior
                     DependencyFailureMode::SKIP => null, // Already skipping
                     DependencyFailureMode::DISABLE => (function () use ($job, $style): void {
                         $job->disable();

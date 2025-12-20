@@ -153,6 +153,67 @@ final class DependencyResolverTest extends TestCase
         self::assertStringContainsString('Dependencies not satisfied', $result['reason']);
     }
 
+    public function testCanJobRunWithNullDependencyModeDefaultsToAnd(): void
+    {
+        $dependency = new CronJob('dependency-job', '@daily');
+
+        $successResult = new CronJobResult(
+            $dependency,
+            0.5,
+            0,
+            'Success',
+            new DateTimeImmutable(),
+        );
+
+        $resultRepo = self::createStub(CronJobResultRepository::class);
+        $resultRepo->method('findLatestByJob')
+            ->with($dependency)
+            ->willReturn($successResult);
+
+        $resolver = new DependencyResolver($resultRepo);
+
+        $job = new CronJob('test-job', '@daily');
+        // dependencyMode is null by default now
+        self::assertNull($job->dependencyMode);
+        $job->addDependency($dependency);
+
+        $result = $resolver->canJobRun($job);
+
+        self::assertTrue($result['canRun']);
+        self::assertNull($result['reason']);
+    }
+
+    public function testCanJobRunWithNullDependencyModeFailsLikeAnd(): void
+    {
+        $dependency = new CronJob('dependency-job', '@daily');
+
+        $failedResult = new CronJobResult(
+            $dependency,
+            0.5,
+            1,
+            'Failed',
+            new DateTimeImmutable(),
+        );
+
+        $resultRepo = self::createStub(CronJobResultRepository::class);
+        $resultRepo->method('findLatestByJob')
+            ->with($dependency)
+            ->willReturn($failedResult);
+
+        $resolver = new DependencyResolver($resultRepo);
+
+        $job = new CronJob('test-job', '@daily');
+        // dependencyMode is null by default now
+        self::assertNull($job->dependencyMode);
+        $job->addDependency($dependency);
+
+        $result = $resolver->canJobRun($job);
+
+        self::assertFalse($result['canRun']);
+        self::assertIsString($result['reason']);
+        self::assertStringContainsString('Dependencies not satisfied', $result['reason']);
+    }
+
     public function testDetectCircularDependenciesSimple(): void
     {
         $resultRepo = self::createStub(CronJobResultRepository::class);

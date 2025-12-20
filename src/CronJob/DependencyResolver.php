@@ -35,7 +35,9 @@ final class DependencyResolver
             $dependencyStatuses[] = $this->isDependencySatisfied($dependency);
         }
 
-        $satisfied = match ($job->dependencyMode) {
+        $dependencyMode = $job->dependencyMode ?? DependencyMode::AND;
+
+        $satisfied = match ($dependencyMode) {
             DependencyMode::AND => !in_array(false, $dependencyStatuses, true),
             DependencyMode::OR => in_array(true, $dependencyStatuses, true),
         };
@@ -46,7 +48,7 @@ final class DependencyResolver
 
         $reason = sprintf(
             'Dependencies not satisfied (mode: %s)',
-            $job->dependencyMode->value,
+            $dependencyMode->value,
         );
 
         return ['canRun' => false, 'reason' => $reason];
