@@ -34,6 +34,7 @@ final class ServiceJobLoaderListener
     /**
      * @param list<string> $tags
      * @param list<class-string> $dependsOn
+     * @param list<array{string, string}> $pauseWindows
      */
     public function addCommand(
         string $expression,
@@ -44,6 +45,7 @@ final class ServiceJobLoaderListener
         array $dependsOn = [],
         DependencyMode $dependencyMode = DependencyMode::AND,
         DependencyFailureMode $onDependencyFailure = DependencyFailureMode::SKIP,
+        array $pauseWindows = [],
     ): void {
         // Register the command in the registry for class name resolution
         $this->commandRegistry->register($command);
@@ -58,6 +60,7 @@ final class ServiceJobLoaderListener
                 $dependsOn,
                 $dependencyMode,
                 $onDependencyFailure,
+                $pauseWindows,
             ),
         );
     }

@@ -41,7 +41,7 @@ final class CommandRegistryTest extends TestCase
         $registry = new CommandRegistry();
 
         // Create two different anonymous command classes to have distinct class names
-        $command1 = new class ('test:command1') extends Command {
+        $command1 = new class('test:command1') extends Command {
             public function __construct(
                 /** @phpstan-ignore property.phpDocType */
                 private readonly string $name,
@@ -56,7 +56,7 @@ final class CommandRegistryTest extends TestCase
             }
         };
 
-        $command2 = new class ('test:command2') extends Command {
+        $command2 = new class('test:command2') extends Command {
             public function __construct(
                 /** @phpstan-ignore property.phpDocType */
                 private readonly string $name,

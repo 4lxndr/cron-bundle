@@ -14,6 +14,7 @@ final class AsCronJob
     /**
      * @param list<string> $tags
      * @param list<class-string> $dependsOn
+     * @param list<array{string, string}> $pauseWindows e.g. [['13:00', '15:00'], ['22:00', '23:00']]
      */
     public function __construct(
         public readonly string $schedule,
@@ -23,6 +24,7 @@ final class AsCronJob
         public readonly array $dependsOn = [],
         public readonly DependencyMode $dependencyMode = DependencyMode::AND,
         public readonly DependencyFailureMode $onDependencyFailure = DependencyFailureMode::SKIP,
+        public readonly array $pauseWindows = [],
     ) {
     }
 }

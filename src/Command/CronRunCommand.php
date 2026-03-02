@@ -77,6 +77,12 @@ class CronRunCommand extends Command
                 continue;
             }
 
+            if ($job->isInPauseWindow($now)) {
+                $style->notice('cronjob will not be executed. Currently in a pause window.');
+
+                continue;
+            }
+
             if ($job->nextRun > $now) {
                 $style->notice(sprintf('cronjob will not be executed. Next run is: %s', $job->nextRun->format('r')));
 

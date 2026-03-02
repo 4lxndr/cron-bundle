@@ -452,9 +452,60 @@ If a job never runs despite being enabled:
 3. Verify dependency mode (AND vs OR)
 4. Check if job was auto-disabled (failure mode = DISABLE)
 
+## Pause Windows
+
+Pause windows let you define daily time ranges during which a cron job is silently skipped, even if its cron expression says it is due. Multiple windows per job are supported. The start time is inclusive and the end time is exclusive.
+
+### Defining Pause Windows via Attribute
+
+Use the `pauseWindows` parameter with `'HH:MM'` string pairs:
+
+```php
+use Shapecode\Bundle\CronBundle\Attribute\AsCronJob;
+
+#[AsCronJob(
+    schedule: '0 * * * *',
+    pauseWindows: [['13:00', '15:00'], ['22:00', '23:30']]
+)]
+class MyHourlyCommand extends Command
+{
+    // Runs every hour, except between 13:00–15:00 and 22:00–23:30
+}
+```
+
+### Defining Pause Windows Programmatically
+
+Call `addPauseWindow()` on the `CronJob` entity directly (accepts `DateTimeImmutable`):
+
+```php
+$job->clearPauseWindows();
+$job->addPauseWindow(new DateTimeImmutable('13:00'), new DateTimeImmutable('15:00'));
+```
+
+### Overnight Windows
+
+A window where `from > to` is treated as an overnight span:
+
+```php
+#[AsCronJob(
+    schedule: '0 * * * *',
+    pauseWindows: [['22:00', '06:00']]  // pauses from 22:00 until 06:00 the next day
+)]
+class NightlyCommand extends Command { }
+```
+
+### How Pause Windows Work
+
+1. When `shapecode:cron:run` executes, each job is checked against its configured pause windows using the current wall-clock time.
+2. If the current time falls inside any window, the job is skipped with the notice: `cronjob will not be executed. Currently in a pause window.`
+3. The next-run time is not recalculated — the job simply skips that occurrence and runs normally at its next scheduled time outside the window.
+4. Pause windows are synced from the attribute to the database each time `shapecode:cron:scan` runs.
+
+---
+
 ### Database Migration
 
-When upgrading to a version with tags and dependencies support, you need to migrate your database:
+When upgrading to a version that adds new columns (tags, dependencies, pause windows), you need to migrate your database:
 
 ```bash
 # Generate migration

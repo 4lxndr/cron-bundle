@@ -17,7 +17,7 @@ final class CronJobManagerTest extends TestCase
 {
     public function testGetApplicationJobs(): void
     {
-        $expression  = '* * * * *';
+        $expression = '* * * * *';
         $commandName = 'value';
 
         $command = self::createStub(Command::class);

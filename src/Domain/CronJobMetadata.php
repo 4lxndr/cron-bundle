@@ -14,6 +14,7 @@ final class CronJobMetadata
     /**
      * @param list<string> $tags
      * @param list<class-string> $dependsOnClasses
+     * @param list<array{string, string}> $pauseWindows
      */
     private function __construct(
         public readonly string $expression,
@@ -25,12 +26,14 @@ final class CronJobMetadata
         public readonly array $dependsOnClasses = [],
         public readonly DependencyMode $dependencyMode = DependencyMode::AND,
         public readonly DependencyFailureMode $onDependencyFailure = DependencyFailureMode::SKIP,
+        public readonly array $pauseWindows = [],
     ) {
     }
 
     /**
      * @param list<string> $tags
      * @param list<class-string> $dependsOnClasses
+     * @param list<array{string, string}> $pauseWindows
      */
     public static function createByCommand(
         string $expression,
@@ -41,6 +44,7 @@ final class CronJobMetadata
         array $dependsOnClasses = [],
         DependencyMode $dependencyMode = DependencyMode::AND,
         DependencyFailureMode $onDependencyFailure = DependencyFailureMode::SKIP,
+        array $pauseWindows = [],
     ): self {
         $commandName = $command->getName();
 
@@ -58,6 +62,7 @@ final class CronJobMetadata
             $dependsOnClasses,
             $dependencyMode,
             $onDependencyFailure,
+            $pauseWindows,
         );
     }
 }

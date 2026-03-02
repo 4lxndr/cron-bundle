@@ -20,7 +20,7 @@ class CommandHelperTest extends TestCase
 {
     public function testGetConsoleBin(): void
     {
-        $path = realpath(__DIR__ . '/../Fixtures');
+        $path = realpath(__DIR__.'/../Fixtures');
         self::assertIsString($path);
 
         $kernel = self::createStub(Kernel::class);
@@ -83,7 +83,7 @@ class CommandHelperTest extends TestCase
 
     public function testGetConsoleBinIsCached(): void
     {
-        $path = realpath(__DIR__ . '/../Fixtures');
+        $path = realpath(__DIR__.'/../Fixtures');
         self::assertIsString($path);
 
         $kernel = self::createStub(Kernel::class);

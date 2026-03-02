@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shapecode\Bundle\CronBundle\Command;
 
+use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Clock\ClockInterface;
 use Shapecode\Bundle\CronBundle\Console\Style\CronStyle;
@@ -93,6 +94,11 @@ final class CronScanCommand extends Command
                 $currentJob->tags = $jobMetadata->tags;
                 $currentJob->dependencyMode = $jobMetadata->dependencyMode;
                 $currentJob->onDependencyFailure = $jobMetadata->onDependencyFailure;
+
+                $currentJob->clearPauseWindows();
+                foreach ($jobMetadata->pauseWindows as [$from, $to]) {
+                    $currentJob->addPauseWindow(new DateTimeImmutable($from), new DateTimeImmutable($to));
+                }
 
                 $io->text(sprintf('command: %s', $jobMetadata->command));
                 $io->text(sprintf('arguments: %s', $jobMetadata->arguments));
@@ -197,6 +203,9 @@ final class CronScanCommand extends Command
         $newJob->tags = $metadata->tags;
         $newJob->dependencyMode = $metadata->dependencyMode;
         $newJob->onDependencyFailure = $metadata->onDependencyFailure;
+        foreach ($metadata->pauseWindows as [$from, $to]) {
+            $newJob->addPauseWindow(new DateTimeImmutable($from), new DateTimeImmutable($to));
+        }
         $newJob->calculateNextRun();
 
         $io->success(sprintf(

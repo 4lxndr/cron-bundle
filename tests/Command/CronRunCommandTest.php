@@ -24,21 +24,21 @@ use Symfony\Component\HttpKernel\Kernel;
 #[CoversClass(CronRunCommand::class)]
 final class CronRunCommandTest extends TestCase
 {
-    private Kernel & Stub $kernel;
+    private Kernel&Stub $kernel;
 
-    private CommandHelper & Stub $commandHelper;
+    private CommandHelper&Stub $commandHelper;
 
-    private EntityManagerInterface & Stub $manager;
+    private EntityManagerInterface&Stub $manager;
 
-    private CronJobRepository & Stub $cronJobRepo;
+    private CronJobRepository&Stub $cronJobRepo;
 
-    private CronJobResultRepository & Stub $cronJobResultRepo;
+    private CronJobResultRepository&Stub $cronJobResultRepo;
 
     private DependencyResolver $dependencyResolver;
 
     private CronRunCommand $command;
 
-    private InputInterface & Stub $input;
+    private InputInterface&Stub $input;
 
     private BufferedOutput $output;
 
@@ -48,13 +48,13 @@ final class CronRunCommandTest extends TestCase
     {
         parent::setUp();
 
-        $this->kernel            = self::createStub(Kernel::class);
-        $this->manager           = self::createStub(EntityManagerInterface::class);
-        $this->commandHelper     = self::createStub(CommandHelper::class);
-        $this->cronJobRepo       = self::createStub(CronJobRepository::class);
+        $this->kernel = self::createStub(Kernel::class);
+        $this->manager = self::createStub(EntityManagerInterface::class);
+        $this->commandHelper = self::createStub(CommandHelper::class);
+        $this->cronJobRepo = self::createStub(CronJobRepository::class);
         $this->cronJobResultRepo = self::createStub(CronJobResultRepository::class);
-        $this->input             = self::createStub(InputInterface::class);
-        $this->output            = new BufferedOutput();
+        $this->input = self::createStub(InputInterface::class);
+        $this->output = new BufferedOutput();
 
         $this->clock = new MockClock();
 

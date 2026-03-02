@@ -19,6 +19,12 @@ use function in_array;
 #[ORM\Entity(repositoryClass: CronJobRepository::class)]
 class CronJob extends AbstractEntity
 {
+    /** @var list<array{from: string, to: string}> */
+    #[ORM\Column(type: Types::JSON, options: ['default' => '[]'])]
+    public private(set) array $pauseWindows {
+        get => $this->pauseWindows;
+    }
+
     #[ORM\Column(type: Types::STRING)]
     public private(set) string $command {
         get => $this->command;
@@ -127,6 +133,7 @@ class CronJob extends AbstractEntity
         $this->dependencies = new ArrayCollection();
         $this->dependencyMode = null;
         $this->onDependencyFailure = null;
+        $this->pauseWindows = [];
         $this->createdAt = null;
         $this->updatedAt = null;
 
@@ -185,6 +192,38 @@ class CronJob extends AbstractEntity
     public function clearDependencies(): void
     {
         $this->dependencies->clear();
+    }
+
+    public function addPauseWindow(DateTimeImmutable $from, DateTimeImmutable $to): void
+    {
+        $windows = $this->pauseWindows;
+        $windows[] = ['from' => $from->format('H:i'), 'to' => $to->format('H:i')];
+        $this->pauseWindows = $windows;
+    }
+
+    public function clearPauseWindows(): void
+    {
+        $this->pauseWindows = [];
+    }
+
+    public function isInPauseWindow(DateTimeImmutable $now): bool
+    {
+        $current = $now->format('H:i');
+        foreach ($this->pauseWindows as $window) {
+            ['from' => $from, 'to' => $to] = $window;
+            if ($from <= $to) {
+                if ($current >= $from && $current < $to) {
+                    return true;
+                }
+            } else {
+                // Overnight window: e.g. 22:00–02:00
+                if ($current >= $from || $current < $to) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /** @param list<string> $tags */

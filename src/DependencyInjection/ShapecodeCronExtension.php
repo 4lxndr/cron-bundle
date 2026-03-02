@@ -43,6 +43,7 @@ final class ShapecodeCronExtension extends ConfigurableExtension
                     'dependsOn' => $attribute->dependsOn,
                     'dependencyMode' => $attribute->dependencyMode->value,
                     'onDependencyFailure' => $attribute->onDependencyFailure->value,
+                    'pauseWindows' => $attribute->pauseWindows,
                 ]);
             },
         );

@@ -324,4 +324,98 @@ class CronJobTest extends TestCase
         $job->onDependencyFailure = null;
         self::assertNull($job->onDependencyFailure);
     }
+
+    public function testPauseWindowsDefaultEmpty(): void
+    {
+        $job = new CronJob('test-command', '@daily');
+
+        self::assertSame([], $job->pauseWindows);
+    }
+
+    public function testAddPauseWindow(): void
+    {
+        $job = new CronJob('test-command', '@daily');
+        $from = new DateTimeImmutable('13:00');
+        $to = new DateTimeImmutable('15:00');
+
+        $job->addPauseWindow($from, $to);
+
+        self::assertCount(1, $job->pauseWindows);
+        self::assertSame(['from' => '13:00', 'to' => '15:00'], $job->pauseWindows[0]);
+    }
+
+    public function testClearPauseWindows(): void
+    {
+        $job = new CronJob('test-command', '@daily');
+        $job->addPauseWindow(new DateTimeImmutable('13:00'), new DateTimeImmutable('15:00'));
+        $job->addPauseWindow(new DateTimeImmutable('22:00'), new DateTimeImmutable('23:00'));
+
+        self::assertCount(2, $job->pauseWindows);
+
+        $job->clearPauseWindows();
+
+        self::assertSame([], $job->pauseWindows);
+    }
+
+    public function testIsInPauseWindowReturnsFalseWhenEmpty(): void
+    {
+        $job = new CronJob('test-command', '@daily');
+
+        self::assertFalse($job->isInPauseWindow(new DateTimeImmutable('14:00')));
+        self::assertFalse($job->isInPauseWindow(new DateTimeImmutable('00:00')));
+    }
+
+    public function testIsInPauseWindowNormalWindow(): void
+    {
+        $job = new CronJob('test-command', '@daily');
+        $job->addPauseWindow(new DateTimeImmutable('13:00'), new DateTimeImmutable('15:00'));
+
+        self::assertTrue($job->isInPauseWindow(new DateTimeImmutable('13:00')));  // start inclusive
+        self::assertTrue($job->isInPauseWindow(new DateTimeImmutable('14:00')));  // inside
+        self::assertTrue($job->isInPauseWindow(new DateTimeImmutable('14:59')));  // just before end
+        self::assertFalse($job->isInPauseWindow(new DateTimeImmutable('15:00'))); // end exclusive
+        self::assertFalse($job->isInPauseWindow(new DateTimeImmutable('12:59'))); // before start
+        self::assertFalse($job->isInPauseWindow(new DateTimeImmutable('16:00'))); // after end
+    }
+
+    public function testIsInPauseWindowOvernightWindow(): void
+    {
+        $job = new CronJob('test-command', '@daily');
+        $job->addPauseWindow(new DateTimeImmutable('22:00'), new DateTimeImmutable('02:00'));
+
+        self::assertTrue($job->isInPauseWindow(new DateTimeImmutable('22:00')));  // start inclusive
+        self::assertTrue($job->isInPauseWindow(new DateTimeImmutable('23:00')));  // evening
+        self::assertTrue($job->isInPauseWindow(new DateTimeImmutable('01:00')));  // early morning
+        self::assertTrue($job->isInPauseWindow(new DateTimeImmutable('01:59')));  // just before end
+        self::assertFalse($job->isInPauseWindow(new DateTimeImmutable('02:00'))); // end exclusive
+        self::assertFalse($job->isInPauseWindow(new DateTimeImmutable('12:00'))); // midday
+        self::assertFalse($job->isInPauseWindow(new DateTimeImmutable('21:59'))); // just before start
+    }
+
+    public function testIsInPauseWindowMultipleWindows(): void
+    {
+        $job = new CronJob('test-command', '@daily');
+        $job->addPauseWindow(new DateTimeImmutable('13:00'), new DateTimeImmutable('15:00'));
+        $job->addPauseWindow(new DateTimeImmutable('18:00'), new DateTimeImmutable('19:00'));
+
+        self::assertTrue($job->isInPauseWindow(new DateTimeImmutable('13:30')));  // in first window
+        self::assertTrue($job->isInPauseWindow(new DateTimeImmutable('18:30')));  // in second window
+        self::assertFalse($job->isInPauseWindow(new DateTimeImmutable('16:00'))); // between windows
+        self::assertFalse($job->isInPauseWindow(new DateTimeImmutable('20:00'))); // after both
+    }
+
+    public function testIsInPauseWindowBoundaries(): void
+    {
+        $job = new CronJob('test-command', '@daily');
+        $job->addPauseWindow(new DateTimeImmutable('10:00'), new DateTimeImmutable('11:00'));
+
+        // Start is inclusive
+        self::assertTrue($job->isInPauseWindow(new DateTimeImmutable('10:00')));
+        // End is exclusive
+        self::assertFalse($job->isInPauseWindow(new DateTimeImmutable('11:00')));
+        // One minute before start is outside
+        self::assertFalse($job->isInPauseWindow(new DateTimeImmutable('09:59')));
+        // One minute before end is inside
+        self::assertTrue($job->isInPauseWindow(new DateTimeImmutable('10:59')));
+    }
 }

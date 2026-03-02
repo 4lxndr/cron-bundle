@@ -18,13 +18,13 @@ use stdClass;
 #[CoversClass(EntitySubscriber::class)]
 class EntitySubscriberTest extends TestCase
 {
-    private ClockInterface & Stub $clock;
+    private ClockInterface&Stub $clock;
 
     private EntitySubscriber $subscriber;
 
     protected function setUp(): void
     {
-        $this->clock      = self::createStub(ClockInterface::class);
+        $this->clock = self::createStub(ClockInterface::class);
         $this->subscriber = new EntitySubscriber($this->clock);
     }
 
@@ -36,7 +36,7 @@ class EntitySubscriberTest extends TestCase
         $entity = new CronJob('test-command', '@daily');
 
         $entityManager = self::createStub(EntityManagerInterface::class);
-        $args          = new LifecycleEventArgs($entity, $entityManager);
+        $args = new LifecycleEventArgs($entity, $entityManager);
 
         $this->subscriber->prePersist($args);
 
@@ -78,7 +78,7 @@ class EntitySubscriberTest extends TestCase
         $nonEntity = new stdClass();
 
         $entityManager = self::createStub(EntityManagerInterface::class);
-        $args          = new LifecycleEventArgs($nonEntity, $entityManager);
+        $args = new LifecycleEventArgs($nonEntity, $entityManager);
 
         $this->subscriber->prePersist($args);
         $this->subscriber->preUpdate($args);

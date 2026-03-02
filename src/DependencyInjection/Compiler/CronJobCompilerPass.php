@@ -41,6 +41,7 @@ final class CronJobCompilerPass implements CompilerPassInterface
                 $maxInstances = $config['maxInstances'] ?? 1;
                 $tags = $config['tags'] ?? [];
                 $dependsOn = $config['dependsOn'] ?? [];
+                $pauseWindows = $config['pauseWindows'] ?? [];
 
                 $dependencyModeValue = $config['dependencyMode'] ?? 'and';
                 assert(is_string($dependencyModeValue));
@@ -59,6 +60,7 @@ final class CronJobCompilerPass implements CompilerPassInterface
                     $dependsOn,
                     $dependencyMode,
                     $onDependencyFailure,
+                    $pauseWindows,
                 ]);
             }
         }

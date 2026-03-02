@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Shapecode\Bundle\CronBundle\Tests\CronJob;
 
 use DateTimeImmutable;
-use Doctrine\Common\Collections\ArrayCollection;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
+use ReflectionClass;
 use Shapecode\Bundle\CronBundle\CronJob\DependencyResolver;
 use Shapecode\Bundle\CronBundle\Domain\DependencyMode;
 use Shapecode\Bundle\CronBundle\Entity\CronJob;
@@ -225,11 +225,11 @@ final class DependencyResolverTest extends TestCase
         $job2 = new CronJob('job2', '@daily');
 
         // Use reflection to set IDs (since they're normally set by Doctrine)
-        $reflection1 = new \ReflectionClass($job1);
+        $reflection1 = new ReflectionClass($job1);
         $idProperty1 = $reflection1->getProperty('id');
         $idProperty1->setValue($job1, 1);
 
-        $reflection2 = new \ReflectionClass($job2);
+        $reflection2 = new ReflectionClass($job2);
         $idProperty2 = $reflection2->getProperty('id');
         $idProperty2->setValue($job2, 2);
 
@@ -254,11 +254,11 @@ final class DependencyResolverTest extends TestCase
         $job2 = new CronJob('job2', '@daily');
 
         // Use reflection to set IDs
-        $reflection1 = new \ReflectionClass($job1);
+        $reflection1 = new ReflectionClass($job1);
         $idProperty1 = $reflection1->getProperty('id');
         $idProperty1->setValue($job1, 1);
 
-        $reflection2 = new \ReflectionClass($job2);
+        $reflection2 = new ReflectionClass($job2);
         $idProperty2 = $reflection2->getProperty('id');
         $idProperty2->setValue($job2, 2);
 
